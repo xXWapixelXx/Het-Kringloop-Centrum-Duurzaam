@@ -6,6 +6,9 @@
 
 declare(strict_types=1);
 
+// laad view
+require_once __DIR__ . '/../../frontend/templates/dashboard.html';
+
 session_start();
 
 class DashboardController
@@ -54,6 +57,3 @@ class DashboardController
 
 // run controller
 $controller = new DashboardController();
-
-// laad view
-require_once __DIR__ . '/../../frontend/templates/dashboard.php';
