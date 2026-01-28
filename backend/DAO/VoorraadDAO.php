@@ -11,34 +11,29 @@ require_once __DIR__ . '/../Models/Voorraad.php';
 
 class VoorraadDAO extends Database
 {
-    // haalt alle voorraadregels op
+    // haalt alle voorraad op
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad");
+        $stmt = $db->query("SELECT * FROM voorraad");
 
         $voorraadLijst = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $voorraadLijst[] = new Voorraad(
-                (int)$row['id'],
-                (int)$row['artikel_id'],
-                $row['locatie'],
-                (int)$row['aantal'],
-                (int)$row['status_id'],
-                (bool)$row['wel_reparatie'],
-                (bool)$row['verkoopgereed'],
-                $row['ingeboekt_op']
-            );
+            $voorraad = new Voorraad();
+            $voorraad->id = (int)$row['id'];
+            $voorraad->artikel_id = $row['artikel_id'] ?? 0;
+            $voorraad->hoeveelheid = $row['hoeveelheid'] ?? $row['aantal'] ?? 0;
+            $voorraadLijst[] = $voorraad;
         }
 
         return $voorraadLijst;
     }
 
-    // haalt één voorraadregel op op basis van id
+    // haalt één voorraad op
     public function getById(int $id): ?Voorraad
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE id = :id");
+        $stmt = $db->prepare("SELECT * FROM voorraad WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -47,140 +42,15 @@ class VoorraadDAO extends Database
             return null;
         }
 
-        return new Voorraad(
-            (int)$row['id'],
-            (int)$row['artikel_id'],
-            $row['locatie'],
-            (int)$row['aantal'],
-            (int)$row['status_id'],
-            (bool)$row['wel_reparatie'],
-            (bool)$row['verkoopgereed'],
-            $row['ingeboekt_op']
-        );
+        $voorraad = new Voorraad();
+        $voorraad->id = (int)$row['id'];
+        $voorraad->artikel_id = $row['artikel_id'] ?? 0;
+        $voorraad->hoeveelheid = $row['hoeveelheid'] ?? $row['aantal'] ?? 0;
+
+        return $voorraad;
     }
 
-    // haalt alle voorraadregels op voor één artikel
-    public function getByArtikelId(int $artikelId): array
-    {
-        $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE artikel_id = :artikel_id");
-        $stmt->bindValue(':artikel_id', $artikelId, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $voorraadLijst = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $voorraadLijst[] = new Voorraad(
-                (int)$row['id'],
-                (int)$row['artikel_id'],
-                $row['locatie'],
-                (int)$row['aantal'],
-                (int)$row['status_id'],
-                (bool)$row['wel_reparatie'],
-                (bool)$row['verkoopgereed'],
-                $row['ingeboekt_op']
-            );
-        }
-
-        return $voorraadLijst;
-    }
-
-    // haalt artikelen op die reparatie nodig hebben
-    public function getArtikelenVoorReparatie(): array
-    {
-        $db = $this->connect();
-        $stmt = $db->query("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE wel_reparatie = 1");
-
-        $voorraadLijst = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $voorraadLijst[] = new Voorraad(
-                (int)$row['id'],
-                (int)$row['artikel_id'],
-                $row['locatie'],
-                (int)$row['aantal'],
-                (int)$row['status_id'],
-                (bool)$row['wel_reparatie'],
-                (bool)$row['verkoopgereed'],
-                $row['ingeboekt_op']
-            );
-        }
-
-        return $voorraadLijst;
-    }
-
-    // haalt artikelen op die verkoopgereed zijn
-    public function getVerkoopgeredeArtikelen(): array
-    {
-        $db = $this->connect();
-        $stmt = $db->query("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE verkoopgereed = 1");
-
-        $voorraadLijst = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $voorraadLijst[] = new Voorraad(
-                (int)$row['id'],
-                (int)$row['artikel_id'],
-                $row['locatie'],
-                (int)$row['aantal'],
-                (int)$row['status_id'],
-                (bool)$row['wel_reparatie'],
-                (bool)$row['verkoopgereed'],
-                $row['ingeboekt_op']
-            );
-        }
-
-        return $voorraadLijst;
-    }
-
-    // maakt een nieuwe voorraadregel aan en geeft de nieuwe id terug
-    public function create(Voorraad $voorraad): int
-    {
-        $db = $this->connect();
-        $stmt = $db->prepare("
-            INSERT INTO voorraad (artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op)
-            VALUES (:artikel_id, :locatie, :aantal, :status_id, :wel_reparatie, :verkoopgereed, :ingeboekt_op)
-        ");
-
-        $stmt->bindValue(':artikel_id', $voorraad->artikel_id, PDO::PARAM_INT);
-        $stmt->bindValue(':locatie', $voorraad->locatie, PDO::PARAM_STR);
-        $stmt->bindValue(':aantal', $voorraad->aantal, PDO::PARAM_INT);
-        $stmt->bindValue(':status_id', $voorraad->status_id, PDO::PARAM_INT);
-        $stmt->bindValue(':wel_reparatie', $voorraad->wel_reparatie ? 1 : 0, PDO::PARAM_INT);
-        $stmt->bindValue(':verkoopgereed', $voorraad->verkoopgereed ? 1 : 0, PDO::PARAM_INT);
-        $stmt->bindValue(':ingeboekt_op', $voorraad->ingeboekt_op, PDO::PARAM_STR);
-
-        $stmt->execute();
-
-        return (int)$db->lastInsertId();
-    }
-
-    // werkt een voorraadregel bij op basis van id
-    public function update(Voorraad $voorraad): bool
-    {
-        $db = $this->connect();
-        $stmt = $db->prepare("
-            UPDATE voorraad
-            SET artikel_id = :artikel_id,
-                locatie = :locatie,
-                aantal = :aantal,
-                status_id = :status_id,
-                wel_reparatie = :wel_reparatie,
-                verkoopgereed = :verkoopgereed,
-                ingeboekt_op = :ingeboekt_op
-            WHERE id = :id
-        ");
-
-        $stmt->bindValue(':id', $voorraad->id, PDO::PARAM_INT);
-        $stmt->bindValue(':artikel_id', $voorraad->artikel_id, PDO::PARAM_INT);
-        $stmt->bindValue(':locatie', $voorraad->locatie, PDO::PARAM_STR);
-        $stmt->bindValue(':aantal', $voorraad->aantal, PDO::PARAM_INT);
-        $stmt->bindValue(':status_id', $voorraad->status_id, PDO::PARAM_INT);
-        $stmt->bindValue(':wel_reparatie', $voorraad->wel_reparatie ? 1 : 0, PDO::PARAM_INT);
-        $stmt->bindValue(':verkoopgereed', $voorraad->verkoopgereed ? 1 : 0, PDO::PARAM_INT);
-        $stmt->bindValue(':ingeboekt_op', $voorraad->ingeboekt_op, PDO::PARAM_STR);
-
-        return $stmt->execute();
-    }
-
-    // verwijdert een voorraadregel op basis van id
+    // verwijdert voorraad
     public function delete(int $id): bool
     {
         $db = $this->connect();
