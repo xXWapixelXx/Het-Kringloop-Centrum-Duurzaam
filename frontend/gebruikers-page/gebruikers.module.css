@@ -1,0 +1,36 @@
+/*
+ * Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
+ * Project: Kringloop Centrum Duurzaam
+ * Datum: 28-01-2026
+ * Beschrijving: Algemene styling voor de applicatie
+ */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    background-color: #3754DB !important;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+.btn-primary {
+    background-color: #3754DB;
+    border-color: #3754DB;
+}
+
+.btn-primary:hover {
+    background-color: #2a41a8;
+    border-color: #2a41a8;
+}

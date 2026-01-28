@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 session_start();
 
+// laad view
+require_once __DIR__ . '/../../frontend/templates/gebruikers.html';
 require_once __DIR__ . '/../DAO/GebruikerDAO.php';
 
 class GebruikerController
@@ -135,6 +137,3 @@ class GebruikerController
 
 // run controller
 $controller = new GebruikerController();
-
-// laad view
-require_once __DIR__ . '/../../frontend/templates/gebruikers.php';
