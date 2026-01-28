@@ -6,15 +6,29 @@
 
 declare(strict_types=1);
 
-class Status
-{
-    public int $id;
-    public string $status;
+class Status {
+    public $id;
+    public $status;
 
     // constructor - maakt een nieuwe status aan
-    public function __construct(int $id = 0, string $status = "")
-    {
+    public function __construct($id = 0, $status = "") {
         $this->id = $id;
         $this->status = $status;
     }
+
+    // getter voor id
+    public function getId() {
+        return $this->id;
+    }
+
+    // getter voor status
+    public function getStatus() {
+        return $this->status;
+    }
+
+    // setter voor status
+    public function setStatus($status) {
+        $this->status = $status;
+    }
 }
+?>

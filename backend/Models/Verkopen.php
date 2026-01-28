@@ -6,23 +6,76 @@
 
 declare(strict_types=1);
 
-class Verkopen
-{
-    public int $id;
-    public int $klant_id;
-    public int $artikel_id;
-    public string $verkocht_op;
+class Verkopen {
+    public $id;
+    public $klant_id;
+    public $artikel_id;
+    public $verkoop_prijs_ex_btw;
+    public $verkocht_op;
 
     // constructor - legt een nieuwe verkoop vast
     public function __construct(
-        int $id = 0,
-        int $klant_id = 0,
-        int $artikel_id = 0,
-        string $verkocht_op = ""
+        $id = 0,
+        $klant_id = 0,
+        $artikel_id = 0,
+        $verkoop_prijs_ex_btw = 0.0,
+        $verkocht_op = ""
     ) {
         $this->id = $id;
         $this->klant_id = $klant_id;
         $this->artikel_id = $artikel_id;
+        $this->verkoop_prijs_ex_btw = $verkoop_prijs_ex_btw;
         $this->verkocht_op = $verkocht_op;
     }
+
+    // berekent verkoopprijs inclusief BTW (21%)
+    public function getVerkoopPrijsIncBtw() {
+        return $this->verkoop_prijs_ex_btw * 1.21;
+    }
+
+    // getter voor id
+    public function getId() {
+        return $this->id;
+    }
+
+    // getter voor klant id
+    public function getKlantId() {
+        return $this->klant_id;
+    }
+
+    // setter voor klant id
+    public function setKlantId($klant_id) {
+        $this->klant_id = $klant_id;
+    }
+
+    // getter voor artikel id
+    public function getArtikelId() {
+        return $this->artikel_id;
+    }
+
+    // setter voor artikel id
+    public function setArtikelId($artikel_id) {
+        $this->artikel_id = $artikel_id;
+    }
+
+    // getter voor verkoopprijs exclusief btw
+    public function getVerkoopPrijsExBtw() {
+        return $this->verkoop_prijs_ex_btw;
+    }
+
+    // setter voor verkoopprijs exclusief btw
+    public function setVerkoopPrijsExBtw($prijs) {
+        $this->verkoop_prijs_ex_btw = $prijs;
+    }
+
+    // getter voor verkocht op datum
+    public function getVerkochtOp() {
+        return $this->verkocht_op;
+    }
+
+    // setter voor verkocht op datum
+    public function setVerkochtOp($datum) {
+        $this->verkocht_op = $datum;
+    }
 }
+?>

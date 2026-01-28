@@ -6,23 +6,22 @@
 
 declare(strict_types=1);
 
-class Planning
-{
-    public int $id;
-    public int $artikel_id;
-    public int $klant_id;
-    public string $kenteken;
-    public string $ophalen_of_bezorgen;
-    public string $afspraak_op;
+class Planning {
+    public $id;
+    public $artikel_id;
+    public $klant_id;
+    public $kenteken;
+    public $ophalen_of_bezorgen;
+    public $afspraak_op;
 
-    // constructor - maakt een nieuwe ophaal of bezorgplanning aan
+    // constructor - maakt een nieuwe planning aan
     public function __construct(
-        int $id = 0,
-        int $artikel_id = 0,
-        int $klant_id = 0,
-        string $kenteken = "",
-        string $ophalen_of_bezorgen = "ophalen",
-        string $afspraak_op = ""
+        $id = 0,
+        $artikel_id = 0,
+        $klant_id = 0,
+        $kenteken = "",
+        $ophalen_of_bezorgen = "ophalen",
+        $afspraak_op = ""
     ) {
         $this->id = $id;
         $this->artikel_id = $artikel_id;
@@ -32,15 +31,69 @@ class Planning
         $this->afspraak_op = $afspraak_op;
     }
 
-    // controleert of de afspraak een ophaalafspraak is
-    public function isOphalen(): bool
-    {
+    // controleert of het een ophaalafspraak is
+    public function isOphalen() {
         return $this->ophalen_of_bezorgen === "ophalen";
     }
 
-    // controleert of de afspraak een bezorgafspraak is
-    public function isBezorgen(): bool
-    {
+    // controleert of het een bezorgafspraak is
+    public function isBezorgen() {
         return $this->ophalen_of_bezorgen === "bezorgen";
     }
+
+    // getter voor id
+    public function getId() {
+        return $this->id;
+    }
+
+    // getter voor artikel id
+    public function getArtikelId() {
+        return $this->artikel_id;
+    }
+
+    // setter voor artikel id
+    public function setArtikelId($artikel_id) {
+        $this->artikel_id = $artikel_id;
+    }
+
+    // getter voor klant id
+    public function getKlantId() {
+        return $this->klant_id;
+    }
+
+    // setter voor klant id
+    public function setKlantId($klant_id) {
+        $this->klant_id = $klant_id;
+    }
+
+    // getter voor kenteken
+    public function getKenteken() {
+        return $this->kenteken;
+    }
+
+    // setter voor kenteken
+    public function setKenteken($kenteken) {
+        $this->kenteken = $kenteken;
+    }
+
+    // getter voor ophalen of bezorgen
+    public function getOphalenOfBezorgen() {
+        return $this->ophalen_of_bezorgen;
+    }
+
+    // setter voor ophalen of bezorgen
+    public function setOphalenOfBezorgen($type) {
+        $this->ophalen_of_bezorgen = $type;
+    }
+
+    // getter voor afspraak datum
+    public function getAfspraakOp() {
+        return $this->afspraak_op;
+    }
+
+    // setter voor afspraak datum
+    public function setAfspraakOp($datum) {
+        $this->afspraak_op = $datum;
+    }
 }
+?>
