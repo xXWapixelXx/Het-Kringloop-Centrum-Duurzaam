@@ -10,7 +10,7 @@ class Database
         $servername = "localhost";
         $username = "root";
         $password = "";
-        $port = 3307;
+        $port = 3306;
         $database = "duurzaam";
 
     // Heb een try catch aangemaakt zodat als de connectie faalt dat er een error word weegegeven
