@@ -56,4 +56,4 @@ class DashboardController
 $controller = new DashboardController();
 
 // laad view
-require_once __DIR__ . '/../../frontend/templates/dashboard.html';
+require_once __DIR__ . '/../../frontend/templates/dashboard.php';

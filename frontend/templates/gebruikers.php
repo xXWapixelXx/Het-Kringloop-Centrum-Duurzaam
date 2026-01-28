@@ -1,3 +1,9 @@
+<?php
+// Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
+// Project: Kringloop Centrum Duurzaam
+// Datum: 28-01-2026
+// Beschrijving: Gebruikersbeheer template
+?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -23,7 +29,6 @@
     <?php endif; ?>
 
     <div class="row">
-        <!-- Gebruikers overzicht -->
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
@@ -68,7 +73,6 @@
             </div>
         </div>
 
-        <!-- Nieuwe gebruiker toevoegen -->
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-success text-white">

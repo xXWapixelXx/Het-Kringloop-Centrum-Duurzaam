@@ -137,4 +137,4 @@ class GebruikerController
 $controller = new GebruikerController();
 
 // laad view
-require_once __DIR__ . '/../../frontend/templates/gebruikers.html';
+require_once __DIR__ . '/../../frontend/templates/gebruikers.php';

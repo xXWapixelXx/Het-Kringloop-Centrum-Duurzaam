@@ -32,12 +32,28 @@ class LoginController
         $dao = new GebruikerDAO();
         $gebruiker = $dao->getByGebruikersnaam($gebruikersnaam);
 
-        if ($gebruiker && password_verify($wachtwoord, $gebruiker->wachtwoord)) {
+        if (!$gebruiker) {
+            $this->error = "Ongeldige gebruikersnaam of wachtwoord.";
+            return;
+        }
+
+        // check wachtwoord - probeer eerst password_verify, anders plain text check
+        $wachtwoordCorrect = false;
+
+        // als wachtwoord gehashed is (begint met $2y$)
+        if (strpos($gebruiker->wachtwoord, '$2y$') === 0) {
+            $wachtwoordCorrect = password_verify($wachtwoord, $gebruiker->wachtwoord);
+        } else {
+            // plain text vergelijking (voor test data)
+            $wachtwoordCorrect = ($wachtwoord === $gebruiker->wachtwoord);
+        }
+
+        if ($wachtwoordCorrect) {
             $_SESSION['gebruiker_id'] = $gebruiker->id;
             $_SESSION['gebruikersnaam'] = $gebruiker->gebruikersnaam;
             $_SESSION['rol_id'] = $gebruiker->rol_id;
 
-            header('Location: ../../frontend/views/dashboard.php');
+            header('Location: DashboardController.php');
             exit;
         } else {
             $this->error = "Ongeldige gebruikersnaam of wachtwoord.";
@@ -51,4 +67,4 @@ $controller->handleLogin();
 $error = $controller->error;
 
 // laad view
-require_once __DIR__ . '/../../frontend/templates/login.html';
+require_once __DIR__ . '/../../frontend/templates/login.php';
