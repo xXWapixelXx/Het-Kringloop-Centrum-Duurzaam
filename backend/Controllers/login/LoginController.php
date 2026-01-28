@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 session_start();
 
+// laad view
+require_once __DIR__ . '/../../frontend/templates/login.html';
 require_once __DIR__ . '/../DAO/GebruikerDAO.php';
 
 class LoginController
@@ -66,5 +68,3 @@ $controller = new LoginController();
 $controller->handleLogin();
 $error = $controller->error;
 
-// laad view
-require_once __DIR__ . '/../../frontend/templates/login.php';
