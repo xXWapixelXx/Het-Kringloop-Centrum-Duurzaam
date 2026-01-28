@@ -16,7 +16,7 @@ class Database
             $db = new PDO("mysql:host=$servername;port=$port;dbname=$database", $username, $password);
             return $db;
         } catch (PDOException $e) {
-            die("Connection failed: " . $e->getMessage());
+            die("Connection faile: " . $e->getMessage());
         }
     }
 }
