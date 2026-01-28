@@ -15,10 +15,7 @@ class GebruikerDAO extends Database
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("
-            SELECT id, gebruikersnaam, wachtwoord, rollen, is_geverifieerd
-            FROM gebruiker
-        ");
+        $stmt = $db->query("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker");
 
         $gebruikers = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -26,8 +23,7 @@ class GebruikerDAO extends Database
                 (int)$row['id'],
                 $row['gebruikersnaam'],
                 $row['wachtwoord'],
-                $row['rollen'],
-                (bool)$row['is_geverifieerd']
+                (int)$row['rol_id']
             );
         }
 
@@ -38,11 +34,7 @@ class GebruikerDAO extends Database
     public function getById(int $id): ?Gebruiker
     {
         $db = $this->connect();
-        $stmt = $db->prepare("
-            SELECT id, gebruikersnaam, wachtwoord, rollen, is_geverifieerd
-            FROM gebruiker
-            WHERE id = :id
-        ");
+        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -55,20 +47,15 @@ class GebruikerDAO extends Database
             (int)$row['id'],
             $row['gebruikersnaam'],
             $row['wachtwoord'],
-            $row['rollen'],
-            (bool)$row['is_geverifieerd']
+            (int)$row['rol_id']
         );
     }
 
-    // haalt een gebruiker op op basis van gebruikersnaam (handig voor login)
+    // haalt een gebruiker op op basis van gebruikersnaam (voor login)
     public function getByGebruikersnaam(string $gebruikersnaam): ?Gebruiker
     {
         $db = $this->connect();
-        $stmt = $db->prepare("
-            SELECT id, gebruikersnaam, wachtwoord, rollen, is_geverifieerd
-            FROM gebruiker
-            WHERE gebruikersnaam = :gebruikersnaam
-        ");
+        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker WHERE gebruikersnaam = :gebruikersnaam");
         $stmt->bindValue(':gebruikersnaam', $gebruikersnaam, PDO::PARAM_STR);
         $stmt->execute();
 
@@ -81,9 +68,29 @@ class GebruikerDAO extends Database
             (int)$row['id'],
             $row['gebruikersnaam'],
             $row['wachtwoord'],
-            $row['rollen'],
-            (bool)$row['is_geverifieerd']
+            (int)$row['rol_id']
         );
+    }
+
+    // haalt gebruikers op per rol
+    public function getByRolId(int $rolId): array
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker WHERE rol_id = :rol_id");
+        $stmt->bindValue(':rol_id', $rolId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $gebruikers = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $gebruikers[] = new Gebruiker(
+                (int)$row['id'],
+                $row['gebruikersnaam'],
+                $row['wachtwoord'],
+                (int)$row['rol_id']
+            );
+        }
+
+        return $gebruikers;
     }
 
     // maakt een nieuwe gebruiker aan en geeft de nieuwe id terug
@@ -91,14 +98,13 @@ class GebruikerDAO extends Database
     {
         $db = $this->connect();
         $stmt = $db->prepare("
-            INSERT INTO gebruiker (gebruikersnaam, wachtwoord, rollen, is_geverifieerd)
-            VALUES (:gebruikersnaam, :wachtwoord, :rollen, :is_geverifieerd)
+            INSERT INTO gebruiker (gebruikersnaam, wachtwoord, rol_id)
+            VALUES (:gebruikersnaam, :wachtwoord, :rol_id)
         ");
 
         $stmt->bindValue(':gebruikersnaam', $gebruiker->gebruikersnaam, PDO::PARAM_STR);
         $stmt->bindValue(':wachtwoord', $gebruiker->wachtwoord, PDO::PARAM_STR);
-        $stmt->bindValue(':rollen', $gebruiker->rollen, PDO::PARAM_STR);
-        $stmt->bindValue(':is_geverifieerd', $gebruiker->is_geverifieerd ? 1 : 0, PDO::PARAM_INT);
+        $stmt->bindValue(':rol_id', $gebruiker->rol_id, PDO::PARAM_INT);
 
         $stmt->execute();
 
@@ -113,16 +119,14 @@ class GebruikerDAO extends Database
             UPDATE gebruiker
             SET gebruikersnaam = :gebruikersnaam,
                 wachtwoord = :wachtwoord,
-                rollen = :rollen,
-                is_geverifieerd = :is_geverifieerd
+                rol_id = :rol_id
             WHERE id = :id
         ");
 
         $stmt->bindValue(':id', $gebruiker->id, PDO::PARAM_INT);
         $stmt->bindValue(':gebruikersnaam', $gebruiker->gebruikersnaam, PDO::PARAM_STR);
         $stmt->bindValue(':wachtwoord', $gebruiker->wachtwoord, PDO::PARAM_STR);
-        $stmt->bindValue(':rollen', $gebruiker->rollen, PDO::PARAM_STR);
-        $stmt->bindValue(':is_geverifieerd', $gebruiker->is_geverifieerd ? 1 : 0, PDO::PARAM_INT);
+        $stmt->bindValue(':rol_id', $gebruiker->rol_id, PDO::PARAM_INT);
 
         return $stmt->execute();
     }
@@ -137,4 +141,4 @@ class GebruikerDAO extends Database
         return $stmt->execute();
     }
 }
-
+?>

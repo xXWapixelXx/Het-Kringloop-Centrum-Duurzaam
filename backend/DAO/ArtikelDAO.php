@@ -15,7 +15,7 @@ class ArtikelDAO extends Database
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("SELECT id, categorie_id, naam, prijs_ex_btw FROM artikel");
+        $stmt = $db->query("SELECT id, categorie_id, naam, omschrijving, merk, kleur, maat, ean, prijs_ex_btw FROM artikel");
 
         $artikelen = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -23,6 +23,11 @@ class ArtikelDAO extends Database
                 (int)$row['id'],
                 (int)$row['categorie_id'],
                 $row['naam'],
+                $row['omschrijving'],
+                $row['merk'],
+                $row['kleur'],
+                $row['maat'],
+                $row['ean'],
                 (float)$row['prijs_ex_btw']
             );
         }
@@ -34,7 +39,7 @@ class ArtikelDAO extends Database
     public function getById(int $id): ?Artikel
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, categorie_id, naam, prijs_ex_btw FROM artikel WHERE id = :id");
+        $stmt = $db->prepare("SELECT id, categorie_id, naam, omschrijving, merk, kleur, maat, ean, prijs_ex_btw FROM artikel WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -47,8 +52,39 @@ class ArtikelDAO extends Database
             (int)$row['id'],
             (int)$row['categorie_id'],
             $row['naam'],
+            $row['omschrijving'],
+            $row['merk'],
+            $row['kleur'],
+            $row['maat'],
+            $row['ean'],
             (float)$row['prijs_ex_btw']
         );
+    }
+
+    // haalt artikelen op per categorie
+    public function getByCategorieId(int $categorieId): array
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("SELECT id, categorie_id, naam, omschrijving, merk, kleur, maat, ean, prijs_ex_btw FROM artikel WHERE categorie_id = :categorie_id");
+        $stmt->bindValue(':categorie_id', $categorieId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $artikelen = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $artikelen[] = new Artikel(
+                (int)$row['id'],
+                (int)$row['categorie_id'],
+                $row['naam'],
+                $row['omschrijving'],
+                $row['merk'],
+                $row['kleur'],
+                $row['maat'],
+                $row['ean'],
+                (float)$row['prijs_ex_btw']
+            );
+        }
+
+        return $artikelen;
     }
 
     // maakt een nieuw artikel aan in de database en geeft de nieuwe id terug
@@ -56,13 +92,18 @@ class ArtikelDAO extends Database
     {
         $db = $this->connect();
         $stmt = $db->prepare("
-            INSERT INTO artikel (categorie_id, naam, prijs_ex_btw)
-            VALUES (:categorie_id, :naam, :prijs_ex_btw)
+            INSERT INTO artikel (categorie_id, naam, omschrijving, merk, kleur, maat, ean, prijs_ex_btw)
+            VALUES (:categorie_id, :naam, :omschrijving, :merk, :kleur, :maat, :ean, :prijs_ex_btw)
         ");
 
-        $stmt->bindValue(':categorie_id', $artikel->getCategorieId(), PDO::PARAM_INT);
-        $stmt->bindValue(':naam', $artikel->getNaam(), PDO::PARAM_STR);
-        $stmt->bindValue(':prijs_ex_btw', $artikel->getPrijsExBtw());
+        $stmt->bindValue(':categorie_id', $artikel->categorie_id, PDO::PARAM_INT);
+        $stmt->bindValue(':naam', $artikel->naam, PDO::PARAM_STR);
+        $stmt->bindValue(':omschrijving', $artikel->omschrijving, PDO::PARAM_STR);
+        $stmt->bindValue(':merk', $artikel->merk, PDO::PARAM_STR);
+        $stmt->bindValue(':kleur', $artikel->kleur, PDO::PARAM_STR);
+        $stmt->bindValue(':maat', $artikel->maat, PDO::PARAM_STR);
+        $stmt->bindValue(':ean', $artikel->ean, PDO::PARAM_STR);
+        $stmt->bindValue(':prijs_ex_btw', $artikel->prijs_ex_btw);
 
         $stmt->execute();
 
@@ -77,14 +118,24 @@ class ArtikelDAO extends Database
             UPDATE artikel
             SET categorie_id = :categorie_id,
                 naam = :naam,
+                omschrijving = :omschrijving,
+                merk = :merk,
+                kleur = :kleur,
+                maat = :maat,
+                ean = :ean,
                 prijs_ex_btw = :prijs_ex_btw
             WHERE id = :id
         ");
 
-        $stmt->bindValue(':id', $artikel->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':categorie_id', $artikel->getCategorieId(), PDO::PARAM_INT);
-        $stmt->bindValue(':naam', $artikel->getNaam(), PDO::PARAM_STR);
-        $stmt->bindValue(':prijs_ex_btw', $artikel->getPrijsExBtw());
+        $stmt->bindValue(':id', $artikel->id, PDO::PARAM_INT);
+        $stmt->bindValue(':categorie_id', $artikel->categorie_id, PDO::PARAM_INT);
+        $stmt->bindValue(':naam', $artikel->naam, PDO::PARAM_STR);
+        $stmt->bindValue(':omschrijving', $artikel->omschrijving, PDO::PARAM_STR);
+        $stmt->bindValue(':merk', $artikel->merk, PDO::PARAM_STR);
+        $stmt->bindValue(':kleur', $artikel->kleur, PDO::PARAM_STR);
+        $stmt->bindValue(':maat', $artikel->maat, PDO::PARAM_STR);
+        $stmt->bindValue(':ean', $artikel->ean, PDO::PARAM_STR);
+        $stmt->bindValue(':prijs_ex_btw', $artikel->prijs_ex_btw);
 
         return $stmt->execute();
     }
@@ -99,4 +150,4 @@ class ArtikelDAO extends Database
         return $stmt->execute();
     }
 }
-
+?>

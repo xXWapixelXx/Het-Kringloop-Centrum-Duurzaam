@@ -15,10 +15,7 @@ class VerkopenDAO extends Database
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("
-            SELECT id, klant_id, artikel_id, verkocht_op
-            FROM verkopen
-        ");
+        $stmt = $db->query("SELECT id, klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op FROM verkopen");
 
         $verkopen = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -26,6 +23,7 @@ class VerkopenDAO extends Database
                 (int)$row['id'],
                 (int)$row['klant_id'],
                 (int)$row['artikel_id'],
+                (float)$row['verkoop_prijs_ex_btw'],
                 $row['verkocht_op']
             );
         }
@@ -37,11 +35,7 @@ class VerkopenDAO extends Database
     public function getById(int $id): ?Verkopen
     {
         $db = $this->connect();
-        $stmt = $db->prepare("
-            SELECT id, klant_id, artikel_id, verkocht_op
-            FROM verkopen
-            WHERE id = :id
-        ");
+        $stmt = $db->prepare("SELECT id, klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op FROM verkopen WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -54,8 +48,31 @@ class VerkopenDAO extends Database
             (int)$row['id'],
             (int)$row['klant_id'],
             (int)$row['artikel_id'],
+            (float)$row['verkoop_prijs_ex_btw'],
             $row['verkocht_op']
         );
+    }
+
+    // haalt verkopen op per klant
+    public function getByKlantId(int $klantId): array
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("SELECT id, klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op FROM verkopen WHERE klant_id = :klant_id");
+        $stmt->bindValue(':klant_id', $klantId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $verkopen = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $verkopen[] = new Verkopen(
+                (int)$row['id'],
+                (int)$row['klant_id'],
+                (int)$row['artikel_id'],
+                (float)$row['verkoop_prijs_ex_btw'],
+                $row['verkocht_op']
+            );
+        }
+
+        return $verkopen;
     }
 
     // maakt een nieuwe verkoop aan en geeft de nieuwe id terug
@@ -63,12 +80,13 @@ class VerkopenDAO extends Database
     {
         $db = $this->connect();
         $stmt = $db->prepare("
-            INSERT INTO verkopen (klant_id, artikel_id, verkocht_op)
-            VALUES (:klant_id, :artikel_id, :verkocht_op)
+            INSERT INTO verkopen (klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op)
+            VALUES (:klant_id, :artikel_id, :verkoop_prijs_ex_btw, :verkocht_op)
         ");
 
         $stmt->bindValue(':klant_id', $verkoop->klant_id, PDO::PARAM_INT);
         $stmt->bindValue(':artikel_id', $verkoop->artikel_id, PDO::PARAM_INT);
+        $stmt->bindValue(':verkoop_prijs_ex_btw', $verkoop->verkoop_prijs_ex_btw);
         $stmt->bindValue(':verkocht_op', $verkoop->verkocht_op, PDO::PARAM_STR);
 
         $stmt->execute();
@@ -84,6 +102,7 @@ class VerkopenDAO extends Database
             UPDATE verkopen
             SET klant_id = :klant_id,
                 artikel_id = :artikel_id,
+                verkoop_prijs_ex_btw = :verkoop_prijs_ex_btw,
                 verkocht_op = :verkocht_op
             WHERE id = :id
         ");
@@ -91,6 +110,7 @@ class VerkopenDAO extends Database
         $stmt->bindValue(':id', $verkoop->id, PDO::PARAM_INT);
         $stmt->bindValue(':klant_id', $verkoop->klant_id, PDO::PARAM_INT);
         $stmt->bindValue(':artikel_id', $verkoop->artikel_id, PDO::PARAM_INT);
+        $stmt->bindValue(':verkoop_prijs_ex_btw', $verkoop->verkoop_prijs_ex_btw);
         $stmt->bindValue(':verkocht_op', $verkoop->verkocht_op, PDO::PARAM_STR);
 
         return $stmt->execute();
@@ -106,4 +126,4 @@ class VerkopenDAO extends Database
         return $stmt->execute();
     }
 }
-
+?>

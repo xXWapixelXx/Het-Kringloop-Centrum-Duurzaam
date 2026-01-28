@@ -15,10 +15,7 @@ class VoorraadDAO extends Database
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("
-            SELECT id, artikel_id, locatie, aantal, status_id, ingeboekt_op
-            FROM voorraad
-        ");
+        $stmt = $db->query("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad");
 
         $voorraadLijst = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -28,6 +25,8 @@ class VoorraadDAO extends Database
                 $row['locatie'],
                 (int)$row['aantal'],
                 (int)$row['status_id'],
+                (bool)$row['wel_reparatie'],
+                (bool)$row['verkoopgereed'],
                 $row['ingeboekt_op']
             );
         }
@@ -39,11 +38,7 @@ class VoorraadDAO extends Database
     public function getById(int $id): ?Voorraad
     {
         $db = $this->connect();
-        $stmt = $db->prepare("
-            SELECT id, artikel_id, locatie, aantal, status_id, ingeboekt_op
-            FROM voorraad
-            WHERE id = :id
-        ");
+        $stmt = $db->prepare("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -58,6 +53,8 @@ class VoorraadDAO extends Database
             $row['locatie'],
             (int)$row['aantal'],
             (int)$row['status_id'],
+            (bool)$row['wel_reparatie'],
+            (bool)$row['verkoopgereed'],
             $row['ingeboekt_op']
         );
     }
@@ -66,11 +63,7 @@ class VoorraadDAO extends Database
     public function getByArtikelId(int $artikelId): array
     {
         $db = $this->connect();
-        $stmt = $db->prepare("
-            SELECT id, artikel_id, locatie, aantal, status_id, ingeboekt_op
-            FROM voorraad
-            WHERE artikel_id = :artikel_id
-        ");
+        $stmt = $db->prepare("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE artikel_id = :artikel_id");
         $stmt->bindValue(':artikel_id', $artikelId, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -82,6 +75,54 @@ class VoorraadDAO extends Database
                 $row['locatie'],
                 (int)$row['aantal'],
                 (int)$row['status_id'],
+                (bool)$row['wel_reparatie'],
+                (bool)$row['verkoopgereed'],
+                $row['ingeboekt_op']
+            );
+        }
+
+        return $voorraadLijst;
+    }
+
+    // haalt artikelen op die reparatie nodig hebben
+    public function getArtikelenVoorReparatie(): array
+    {
+        $db = $this->connect();
+        $stmt = $db->query("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE wel_reparatie = 1");
+
+        $voorraadLijst = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $voorraadLijst[] = new Voorraad(
+                (int)$row['id'],
+                (int)$row['artikel_id'],
+                $row['locatie'],
+                (int)$row['aantal'],
+                (int)$row['status_id'],
+                (bool)$row['wel_reparatie'],
+                (bool)$row['verkoopgereed'],
+                $row['ingeboekt_op']
+            );
+        }
+
+        return $voorraadLijst;
+    }
+
+    // haalt artikelen op die verkoopgereed zijn
+    public function getVerkoopgeredeArtikelen(): array
+    {
+        $db = $this->connect();
+        $stmt = $db->query("SELECT id, artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op FROM voorraad WHERE verkoopgereed = 1");
+
+        $voorraadLijst = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $voorraadLijst[] = new Voorraad(
+                (int)$row['id'],
+                (int)$row['artikel_id'],
+                $row['locatie'],
+                (int)$row['aantal'],
+                (int)$row['status_id'],
+                (bool)$row['wel_reparatie'],
+                (bool)$row['verkoopgereed'],
                 $row['ingeboekt_op']
             );
         }
@@ -94,14 +135,16 @@ class VoorraadDAO extends Database
     {
         $db = $this->connect();
         $stmt = $db->prepare("
-            INSERT INTO voorraad (artikel_id, locatie, aantal, status_id, ingeboekt_op)
-            VALUES (:artikel_id, :locatie, :aantal, :status_id, :ingeboekt_op)
+            INSERT INTO voorraad (artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op)
+            VALUES (:artikel_id, :locatie, :aantal, :status_id, :wel_reparatie, :verkoopgereed, :ingeboekt_op)
         ");
 
         $stmt->bindValue(':artikel_id', $voorraad->artikel_id, PDO::PARAM_INT);
         $stmt->bindValue(':locatie', $voorraad->locatie, PDO::PARAM_STR);
         $stmt->bindValue(':aantal', $voorraad->aantal, PDO::PARAM_INT);
         $stmt->bindValue(':status_id', $voorraad->status_id, PDO::PARAM_INT);
+        $stmt->bindValue(':wel_reparatie', $voorraad->wel_reparatie ? 1 : 0, PDO::PARAM_INT);
+        $stmt->bindValue(':verkoopgereed', $voorraad->verkoopgereed ? 1 : 0, PDO::PARAM_INT);
         $stmt->bindValue(':ingeboekt_op', $voorraad->ingeboekt_op, PDO::PARAM_STR);
 
         $stmt->execute();
@@ -119,6 +162,8 @@ class VoorraadDAO extends Database
                 locatie = :locatie,
                 aantal = :aantal,
                 status_id = :status_id,
+                wel_reparatie = :wel_reparatie,
+                verkoopgereed = :verkoopgereed,
                 ingeboekt_op = :ingeboekt_op
             WHERE id = :id
         ");
@@ -128,6 +173,8 @@ class VoorraadDAO extends Database
         $stmt->bindValue(':locatie', $voorraad->locatie, PDO::PARAM_STR);
         $stmt->bindValue(':aantal', $voorraad->aantal, PDO::PARAM_INT);
         $stmt->bindValue(':status_id', $voorraad->status_id, PDO::PARAM_INT);
+        $stmt->bindValue(':wel_reparatie', $voorraad->wel_reparatie ? 1 : 0, PDO::PARAM_INT);
+        $stmt->bindValue(':verkoopgereed', $voorraad->verkoopgereed ? 1 : 0, PDO::PARAM_INT);
         $stmt->bindValue(':ingeboekt_op', $voorraad->ingeboekt_op, PDO::PARAM_STR);
 
         return $stmt->execute();
@@ -143,4 +190,4 @@ class VoorraadDAO extends Database
         return $stmt->execute();
     }
 }
-
+?>
