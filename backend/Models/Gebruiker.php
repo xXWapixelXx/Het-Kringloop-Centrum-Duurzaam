@@ -11,13 +11,15 @@ class Gebruiker {
     public $gebruikersnaam;
     public $wachtwoord;
     public $rol_id;
+    public $geblokkeerd; // 32
 
     // constructor - maakt een nieuwe gebruiker aan
-    public function __construct($id = 0, $gebruikersnaam = "", $wachtwoord = "", $rol_id = 0) {
+    public function __construct($id = 0, $gebruikersnaam = "", $wachtwoord = "", $rol_id = 0, $geblokkeerd = 0) {
         $this->id = $id;
         $this->gebruikersnaam = $gebruikersnaam;
         $this->wachtwoord = $wachtwoord;
         $this->rol_id = $rol_id;
+        $this->geblokkeerd = $geblokkeerd;
     }
 
     // getter voor id
@@ -53,6 +55,16 @@ class Gebruiker {
     // setter voor rol id
     public function setRolId($rol_id) {
         $this->rol_id = $rol_id;
+    }
+
+    // getter voor geblokkeerd status (US-32)
+    public function isGeblokkeerd() {
+        return $this->geblokkeerd == 1;
+    }
+
+    // setter voor geblokkeerd status (US-32)
+    public function setGeblokkeerd($geblokkeerd) {
+        $this->geblokkeerd = $geblokkeerd ? 1 : 0;
     }
 
     // controleert of ingevoerd wachtwoord klopt

@@ -2,10 +2,10 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Klanten beheer template
+// Beschrijving: Donateurs beheer template
 
 if (!defined('VIA_CONTROLLER')) {
-    header('Location: ../../backend/Controllers/klant/KlantController.php');
+    header('Location: ../../backend/Controllers/donateur/DonateurController.php');
     exit;
 }
 ?>
@@ -14,21 +14,27 @@ if (!defined('VIA_CONTROLLER')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klanten - Kringloop Centrum Duurzaam</title>
+    <title>Donateurs - Kringloop Centrum Duurzaam</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .navbar { background-color: #3754DB !important; padding: 12px 0; }
         .navbar-brand { font-size: 1.3rem; font-weight: 600; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
         .page-title { font-size: 1.5rem; font-weight: 400; color: #333; margin: 0; }
-        .btn-action { background-color: #7c83db; color: white; border-radius: 6px; padding: 10px 20px; font-weight: 500; border: none; }
+        .btn-action { background-color: #7c83db; color: white; border-radius: 6px; padding: 10px 20px; font-weight: 500; border: none; text-decoration: none; }
         .btn-action:hover { background-color: #3754DB; color: white; }
         .data-table { background: white; }
+        .data-table table { margin: 0; }
         .data-table th { background: transparent; border-bottom: 2px solid #333; font-weight: 500; padding: 15px 20px; color: #333; }
         .data-table td { padding: 20px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .data-table tr:last-child td { border-bottom: none; }
         .table-footer { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; color: #666; }
-        .actions-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 5px 10px; }
+        .actions-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 5px 10px; letter-spacing: 2px; }
+        .alert { border-radius: 8px; }
+        .search-box { display: flex; gap: 10px; }
+        .search-box input { border-radius: 6px; border: 1px solid #ddd; padding: 8px 15px; }
+        .search-box button { border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -57,10 +63,8 @@ if (!defined('VIA_CONTROLLER')) {
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="../voorraad/VoorraadController.php">Voorraadbeheer</a></li>
                         <li><a class="dropdown-item" href="../artikel/ArtikelController.php">Artikelen</a></li>
-                        <li><a class="dropdown-item" href="KlantController.php">Klanten</a></li>
-                        <li><a class="dropdown-item" href="../donateur/DonateurController.php">Donateurs</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="../verkopen/VerkopenController.php">Verkopen</a></li>
+                        <li><a class="dropdown-item" href="../klant/KlantController.php">Klanten</a></li>
+                        <li><a class="dropdown-item" href="DonateurController.php">Donateurs</a></li>
                     </ul>
                 </li>
                 <?php if (isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1): ?>
@@ -90,8 +94,17 @@ if (!defined('VIA_CONTROLLER')) {
     <?php endif; ?>
 
     <div class="page-header">
-        <h1 class="page-title">Klanten</h1>
-        <button class="btn btn-action" data-bs-toggle="modal" data-bs-target="#nieuweKlantModal">Nieuwe Klant</button>
+        <h1 class="page-title">Donateurs</h1>
+        <div class="d-flex gap-3 align-items-center">
+            <form method="GET" class="search-box">
+                <input type="text" name="zoek" placeholder="Zoek op naam..." value="<?php echo htmlspecialchars($controller->zoekterm); ?>">
+                <button type="submit" class="btn btn-outline-secondary">Zoeken</button>
+                <?php if (!empty($controller->zoekterm)): ?>
+                <a href="DonateurController.php" class="btn btn-outline-danger">Reset</a>
+                <?php endif; ?>
+            </form>
+            <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#nieuweDonateurModal">Nieuwe Donateur</button>
+        </div>
     </div>
 
     <div class="data-table">
@@ -100,31 +113,33 @@ if (!defined('VIA_CONTROLLER')) {
                 <tr>
                     <th>ID</th>
                     <th>Naam</th>
-                    <th>Email</th>
+                    <th>Adres</th>
                     <th>Telefoon</th>
-                    <th>Woonplaats</th>
+                    <th>Email</th>
+                    <th>Ingevoerd</th>
                     <th style="width: 60px;"></th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($controller->klanten)): ?>
+                <?php if (empty($controller->donateurs)): ?>
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-4">Geen klanten gevonden</td>
+                    <td colspan="7" class="text-center text-muted py-4">Geen donateurs gevonden</td>
                 </tr>
                 <?php else: ?>
-                <?php foreach ($controller->klanten as $klant): ?>
+                <?php foreach ($controller->donateurs as $item): ?>
                 <tr>
-                    <td><?php echo $klant->id; ?></td>
-                    <td><?php echo htmlspecialchars($klant->naam); ?></td>
-                    <td><?php echo htmlspecialchars($klant->email); ?></td>
-                    <td><?php echo htmlspecialchars($klant->telefoon); ?></td>
-                    <td><?php echo htmlspecialchars($klant->plaats); ?></td>
+                    <td><?php echo $item->id; ?></td>
+                    <td><?php echo htmlspecialchars($item->getVolledigeNaam()); ?></td>
+                    <td><?php echo htmlspecialchars($item->getVolledigAdres()); ?></td>
+                    <td><?php echo htmlspecialchars($item->telefoon); ?></td>
+                    <td><?php echo htmlspecialchars($item->email); ?></td>
+                    <td><?php echo $item->datum_ingevoerd ? date('d-m-Y', strtotime($item->datum_ingevoerd)) : '-'; ?></td>
                     <td>
                         <div class="dropdown">
                             <button class="actions-btn" data-bs-toggle="dropdown">...</button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="?edit=<?php echo $klant->id; ?>">Bewerken</a></li>
-                                <li><a class="dropdown-item text-danger" href="?delete=<?php echo $klant->id; ?>" onclick="return confirm('Weet je zeker dat je deze klant wilt verwijderen?')">Verwijderen</a></li>
+                                <li><a class="dropdown-item" href="?edit=<?php echo $item->id; ?>">Bewerken</a></li>
+                                <li><a class="dropdown-item text-danger" href="?delete=<?php echo $item->id; ?>" onclick="return confirm('Weet je zeker dat je deze donateur wilt verwijderen?')">Verwijderen</a></li>
                             </ul>
                         </div>
                     </td>
@@ -140,12 +155,12 @@ if (!defined('VIA_CONTROLLER')) {
     </div>
 </div>
 
-<!-- Modal voor nieuwe klant -->
-<div class="modal fade" id="nieuweKlantModal" tabindex="-1">
-    <div class="modal-dialog">
+<!-- Modal voor nieuwe donateur -->
+<div class="modal fade" id="nieuweDonateurModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Nieuwe Klant</h5>
+                <h5 class="modal-title">Nieuwe Donateur</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
@@ -164,23 +179,30 @@ if (!defined('VIA_CONTROLLER')) {
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Telefoon</label>
-                        <input type="text" class="form-control" name="telefoonnummer">
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label">Adres</label>
                         <input type="text" class="form-control" name="adres">
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Woonplaats</label>
-                        <input type="text" class="form-control" name="woonplaats">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Plaats</label>
+                            <input type="text" class="form-control" name="plaats">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Geboortedatum</label>
+                            <input type="date" class="form-control" name="geboortedatum">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefoon</label>
+                            <input type="text" class="form-control" name="telefoon">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -192,47 +214,61 @@ if (!defined('VIA_CONTROLLER')) {
     </div>
 </div>
 
-<!-- Modal voor klant bewerken -->
-<?php if (!empty($controller->teBewerkenKlant)): ?>
-<div class="modal fade show" id="bewerkKlantModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
-    <div class="modal-dialog">
+<!-- Modal voor bewerken donateur -->
+<?php if ($controller->editDonateur): ?>
+<div class="modal fade show" id="editDonateurModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Klant Bewerken</h5>
-                <a href="KlantController.php" class="btn-close"></a>
+                <h5 class="modal-title">Donateur Bewerken</h5>
+                <a href="DonateurController.php" class="btn-close"></a>
             </div>
             <form method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="actie" value="bewerken">
-                    <input type="hidden" name="id" value="<?php echo $controller->teBewerkenKlant->id; ?>">
+                    <input type="hidden" name="id" value="<?php echo $controller->editDonateur->id; ?>">
+                    <input type="hidden" name="datum_ingevoerd" value="<?php echo $controller->editDonateur->datum_ingevoerd; ?>">
 
-                    <div class="mb-3">
-                        <label class="form-label">Naam *</label>
-                        <input type="text" class="form-control" name="naam" value="<?php echo htmlspecialchars($controller->teBewerkenKlant->naam); ?>" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($controller->teBewerkenKlant->email); ?>">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Telefoon</label>
-                        <input type="text" class="form-control" name="telefoon" value="<?php echo htmlspecialchars($controller->teBewerkenKlant->telefoon); ?>">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Voornaam *</label>
+                            <input type="text" class="form-control" name="voornaam" value="<?php echo htmlspecialchars($controller->editDonateur->voornaam); ?>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Achternaam *</label>
+                            <input type="text" class="form-control" name="achternaam" value="<?php echo htmlspecialchars($controller->editDonateur->achternaam); ?>" required>
+                        </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Adres</label>
-                        <input type="text" class="form-control" name="adres" value="<?php echo htmlspecialchars($controller->teBewerkenKlant->adres); ?>">
+                        <input type="text" class="form-control" name="adres" value="<?php echo htmlspecialchars($controller->editDonateur->adres); ?>">
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Woonplaats</label>
-                        <input type="text" class="form-control" name="plaats" value="<?php echo htmlspecialchars($controller->teBewerkenKlant->plaats); ?>">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Plaats</label>
+                            <input type="text" class="form-control" name="plaats" value="<?php echo htmlspecialchars($controller->editDonateur->plaats); ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Geboortedatum</label>
+                            <input type="date" class="form-control" name="geboortedatum" value="<?php echo $controller->editDonateur->geboortedatum; ?>">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefoon</label>
+                            <input type="text" class="form-control" name="telefoon" value="<?php echo htmlspecialchars($controller->editDonateur->telefoon); ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($controller->editDonateur->email); ?>">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a href="KlantController.php" class="btn btn-secondary">Annuleren</a>
+                    <a href="DonateurController.php" class="btn btn-secondary">Annuleren</a>
                     <button type="submit" class="btn btn-action">Opslaan</button>
                 </div>
             </form>

@@ -6,9 +6,6 @@
 
 declare(strict_types=1);
 
-// laad view
-require_once __DIR__ . '/../../frontend/templates/dashboard.html';
-
 session_start();
 
 class DashboardController
@@ -16,27 +13,23 @@ class DashboardController
     public $gebruikersnaam;
     public $rolNaam;
     public $rolId;
-
-    // rollen namen
-    private $rollen = [
-        1 => 'Directie',
-        2 => 'Magazijn medewerker',
-        3 => 'Winkelpersoneel',
-        4 => 'Chauffeur'
-    ];
+    public $isIngelogd;
 
     public function __construct()
     {
         $this->checkLogin();
-        $this->loadUserData();
+        if ($this->isIngelogd) {
+            $this->loadUserData();
+        }
     }
 
     // check of gebruiker is ingelogd
     private function checkLogin()
     {
-        if (!isset($_SESSION['gebruiker_id'])) {
-            header('Location: LoginController.php');
-            exit;
+        if (isset($_SESSION['gebruiker_id'])) {
+            $this->isIngelogd = true;
+        } else {
+            $this->isIngelogd = false;
         }
     }
 
@@ -45,7 +38,10 @@ class DashboardController
     {
         $this->gebruikersnaam = $_SESSION['gebruikersnaam'];
         $this->rolId = $_SESSION['rol_id'];
-        $this->rolNaam = $this->rollen[$this->rolId] ?? 'Onbekend';
+
+        // laad rol naam uit rollen mapping
+        require __DIR__ . '/../../Config/rollen.php';
+        $this->rolNaam = $ROL_LEN[$this->rolId] ?? 'Onbekend';
     }
 
     // check of gebruiker directie is
@@ -57,3 +53,7 @@ class DashboardController
 
 // run controller
 $controller = new DashboardController();
+
+// laad view (markeer dat we via controller komen, anders zou view direct openen)
+define('VIA_CONTROLLER', true);
+require_once __DIR__ . '/../../../frontend/dashboard-page/dashboard.php';

@@ -3,6 +3,12 @@
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
 // Beschrijving: Login template
+
+// als iemand dit bestand direct opent, doorsturen naar de backend controller
+if (!defined('VIA_CONTROLLER')) {
+    header('Location: ../../backend/Controllers/login/LoginController.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -95,6 +101,9 @@
 
 <div class="login-box">
     <div class="login-title">
+        <a href="/Het-Kringloop-Centrum-Duurzaam/backend/Controllers/dashboard/DashboardController.php" style="text-decoration: none; display: block;">
+            <img src="/Het-Kringloop-Centrum-Duurzaam/frontend/images/logo.png" alt="Logo" style="height: 60px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; cursor: pointer;">
+        </a>
         <h2>Kringloop Centrum</h2>
         <p>Log in om verder te gaan</p>
     </div>
@@ -117,6 +126,7 @@
         </div>
 
         <button type="submit" class="btn btn-login">Inloggen</button>
+        <button type="reset" class="btn btn-secondary mt-2">Reset</button>
     </form>
 
     <p class="footer-text">Neem contact op met beheerder voor een account</p>

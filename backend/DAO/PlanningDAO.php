@@ -115,5 +115,32 @@ class PlanningDAO extends Database
 
         return $stmt->execute();
     }
+
+    // haalt planningen op gefilterd op datum (US-28)
+    public function getByDatum(string $datum): array
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            SELECT id, artikel_id, klant_id, kenteken, ophalen_of_bezorgen, afspraak_op
+            FROM planning
+            WHERE DATE(afspraak_op) = :datum
+        ");
+        $stmt->bindValue(':datum', $datum, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $planningen = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $planningen[] = new Planning(
+                (int)$row['id'],
+                (int)$row['artikel_id'],
+                (int)$row['klant_id'],
+                $row['kenteken'],
+                $row['ophalen_of_bezorgen'],
+                $row['afspraak_op']
+            );
+        }
+
+        return $planningen;
+    }
 }
 

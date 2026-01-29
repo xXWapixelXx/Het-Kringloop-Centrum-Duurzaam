@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Artikel.php';
 
 class ArtikelDAO extends Database
 {
-    // haalt alle artikelen op uit de database
+    // haalt alle artikelen op (functioneel ontwerp 3.6: naam, omschrijving, categorie, merk, kleur, maat, ean)
     public function getAll(): array
     {
         $db = $this->connect();
@@ -23,11 +23,11 @@ class ArtikelDAO extends Database
                 (int)$row['id'],
                 (int)$row['categorie_id'],
                 $row['naam'],
-                $row['omschrijving'],
-                $row['merk'],
-                $row['kleur'],
-                $row['maat'],
-                $row['ean'],
+                $row['omschrijving'] ?? '',
+                $row['merk'] ?? null,
+                $row['kleur'] ?? null,
+                $row['maat'] ?? null,
+                $row['ean'] ?? null,
                 (float)$row['prijs_ex_btw']
             );
         }
@@ -75,11 +75,11 @@ class ArtikelDAO extends Database
                 (int)$row['id'],
                 (int)$row['categorie_id'],
                 $row['naam'],
-                $row['omschrijving'],
-                $row['merk'],
-                $row['kleur'],
-                $row['maat'],
-                $row['ean'],
+                $row['omschrijving'] ?? '',
+                $row['merk'] ?? null,
+                $row['kleur'] ?? null,
+                $row['maat'] ?? null,
+                $row['ean'] ?? null,
                 (float)$row['prijs_ex_btw']
             );
         }
@@ -87,7 +87,7 @@ class ArtikelDAO extends Database
         return $artikelen;
     }
 
-    // maakt een nieuw artikel aan in de database en geeft de nieuwe id terug
+    // maakt een nieuw artikel aan (functioneel ontwerp 3.6)
     public function create(Artikel $artikel): int
     {
         $db = $this->connect();

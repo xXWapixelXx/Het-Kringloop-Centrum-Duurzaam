@@ -1,0 +1,101 @@
+/*
+  Klantenpagina - Kringloop Centrum Duurzaam
+  Styling voor de klanten beheer pagina
+*/
+
+body {
+    background-color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    background-color: #3754DB !important;
+    padding: 12px 0;
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #333;
+    margin: 0;
+}
+
+.btn-action {
+    background-color: #7c83db;
+    color: white;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-weight: 500;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-action:hover {
+    background-color: #3754DB;
+    color: white;
+}
+
+.data-table {
+    background: white;
+}
+
+.data-table table {
+    margin: 0;
+}
+
+.data-table th {
+    background: transparent;
+    border-bottom: 2px solid #333;
+    font-weight: 500;
+    padding: 15px 20px;
+    color: #333;
+}
+
+.data-table td {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    color: #666;
+}
+
+.pagination-nav a {
+    color: #3754DB;
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+.actions-btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    letter-spacing: 2px;
+}
+
+.alert {
+    border-radius: 8px;
+}

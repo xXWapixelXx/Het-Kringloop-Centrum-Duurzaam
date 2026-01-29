@@ -8,21 +8,20 @@ declare(strict_types=1);
 
 session_start();
 
-// laad view
-require_once __DIR__ . '/../../frontend/templates/gebruikers.html';
-require_once __DIR__ . '/../DAO/GebruikerDAO.php';
+require_once __DIR__ . '/../../DAO/GebruikerDAO.php';
 
 class GebruikerController
 {
     public $melding = "";
     public $meldingType = "";
     public $gebruikers = [];
+    public $editGebruiker = null;
 
-    // rollen
+    // rollen (zelfde volgorde als Config/rollen.php)
     public $rollen = [
         1 => 'Directie',
-        2 => 'Magazijn medewerker',
-        3 => 'Winkelpersoneel',
+        2 => 'Winkelpersoneel',
+        3 => 'Magazijnmedewerker',
         4 => 'Chauffeur'
     ];
 
@@ -35,13 +34,19 @@ class GebruikerController
         $this->dao = new GebruikerDAO();
         $this->handleActions();
         $this->loadGebruikers();
+
+        if (isset($_SESSION['gebruiker_melding'])) {
+            $this->melding = $_SESSION['gebruiker_melding'];
+            $this->meldingType = $_SESSION['gebruiker_melding_type'] ?? 'success';
+            unset($_SESSION['gebruiker_melding'], $_SESSION['gebruiker_melding_type']);
+        }
     }
 
     // check of gebruiker is ingelogd
     private function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
-            header('Location: LoginController.php');
+            header('Location: ../login/LoginController.php');
             exit;
         }
     }
@@ -50,12 +55,12 @@ class GebruikerController
     private function checkDirectie()
     {
         if ($_SESSION['rol_id'] != 1) {
-            header('Location: DashboardController.php');
+            header('Location: ../dashboard/DashboardController.php');
             exit;
         }
     }
 
-    // verwerk acties (toevoegen/verwijderen)
+    // verwerk acties
     private function handleActions()
     {
         // nieuwe gebruiker toevoegen
@@ -63,16 +68,37 @@ class GebruikerController
             $this->handleToevoegen();
         }
 
+        // gebruiker bewerken (rol wijzigen)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
+            $this->handleBewerken();
+        }
+
         // gebruiker verwijderen
         if (isset($_GET['delete'])) {
             $this->handleVerwijderen((int)$_GET['delete']);
+        }
+
+        // gebruiker blokkeren/deblokkeren (US-32)
+        if (isset($_GET['blokkeer'])) {
+            $this->handleBlokkeer((int)$_GET['blokkeer']);
+        }
+
+        // wachtwoord resetten (US-7)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'reset_wachtwoord') {
+            $this->handleResetWachtwoord();
+        }
+
+        // edit mode laden
+        if (isset($_GET['edit'])) {
+            $id = (int)$_GET['edit'];
+            $this->editGebruiker = $this->dao->getById($id);
         }
     }
 
     // voeg nieuwe gebruiker toe
     private function handleToevoegen()
     {
-        $gebruikersnaam = $_POST['gebruikersnaam'] ?? '';
+        $gebruikersnaam = trim($_POST['gebruikersnaam'] ?? '');
         $wachtwoord = $_POST['wachtwoord'] ?? '';
         $rol_id = (int)($_POST['rol_id'] ?? 0);
 
@@ -92,8 +118,41 @@ class GebruikerController
 
         $nieuweGebruiker = new Gebruiker(0, $gebruikersnaam, password_hash($wachtwoord, PASSWORD_DEFAULT), $rol_id);
         $this->dao->create($nieuweGebruiker);
-        $this->melding = "Gebruiker succesvol toegevoegd!";
-        $this->meldingType = "success";
+
+        $_SESSION['gebruiker_melding'] = "Gebruiker toegevoegd!";
+        $_SESSION['gebruiker_melding_type'] = "success";
+        header('Location: GebruikerController.php');
+        exit;
+    }
+
+    // bewerk gebruiker (rol wijzigen)
+    private function handleBewerken()
+    {
+        $id = (int)($_POST['id'] ?? 0);
+        $rol_id = (int)($_POST['rol_id'] ?? 0);
+
+        if ($id == 0 || $rol_id == 0) {
+            $this->melding = "Ongeldige gegevens.";
+            $this->meldingType = "danger";
+            return;
+        }
+
+        // haal bestaande gebruiker op
+        $gebruiker = $this->dao->getById($id);
+        if (!$gebruiker) {
+            $this->melding = "Gebruiker niet gevonden.";
+            $this->meldingType = "danger";
+            return;
+        }
+
+        // update rol
+        $gebruiker->rol_id = $rol_id;
+        $this->dao->update($gebruiker);
+
+        $_SESSION['gebruiker_melding'] = "Rol gewijzigd!";
+        $_SESSION['gebruiker_melding_type'] = "success";
+        header('Location: GebruikerController.php');
+        exit;
     }
 
     // verwijder gebruiker
@@ -106,26 +165,69 @@ class GebruikerController
         }
 
         $this->dao->delete($id);
-        $this->melding = "Gebruiker verwijderd.";
-        $this->meldingType = "warning";
+        $_SESSION['gebruiker_melding'] = "Gebruiker verwijderd.";
+        $_SESSION['gebruiker_melding_type'] = "warning";
+        header('Location: GebruikerController.php');
+        exit;
+    }
+
+    // blokkeer of deblokkeer gebruiker (US-32)
+    private function handleBlokkeer($id)
+    {
+        if ($id == $_SESSION['gebruiker_id']) {
+            $this->melding = "Je kunt jezelf niet blokkeren.";
+            $this->meldingType = "warning";
+            return;
+        }
+
+        $gebruiker = $this->dao->getById($id);
+        if (!$gebruiker) {
+            $this->melding = "Gebruiker niet gevonden.";
+            $this->meldingType = "danger";
+            return;
+        }
+
+        $this->dao->toggleBlokkeer($id);
+        $actie = $gebruiker->geblokkeerd ? "gedeblokkeerd" : "geblokkeerd";
+        $_SESSION['gebruiker_melding'] = "Gebruiker " . $actie . ".";
+        $_SESSION['gebruiker_melding_type'] = $gebruiker->geblokkeerd ? "success" : "warning";
+        header('Location: GebruikerController.php');
+        exit;
+    }
+
+    // reset wachtwoord voor gebruiker (US-7)
+    private function handleResetWachtwoord()
+    {
+        $id = (int)($_POST['id'] ?? 0);
+        $nieuwWachtwoord = $_POST['nieuw_wachtwoord'] ?? '';
+
+        if ($id == 0 || $nieuwWachtwoord === '') {
+            $this->melding = "Vul een nieuw wachtwoord in.";
+            $this->meldingType = "danger";
+            return;
+        }
+
+        $gebruiker = $this->dao->getById($id);
+        if (!$gebruiker) {
+            $this->melding = "Gebruiker niet gevonden.";
+            $this->meldingType = "danger";
+            return;
+        }
+
+        // update wachtwoord
+        $gebruiker->wachtwoord = password_hash($nieuwWachtwoord, PASSWORD_DEFAULT);
+        $this->dao->update($gebruiker);
+
+        $_SESSION['gebruiker_melding'] = "Wachtwoord gereset voor " . $gebruiker->gebruikersnaam . ".";
+        $_SESSION['gebruiker_melding_type'] = "success";
+        header('Location: GebruikerController.php');
+        exit;
     }
 
     // laad alle gebruikers
     private function loadGebruikers()
     {
         $this->gebruikers = $this->dao->getAll();
-    }
-
-    // geef rol badge kleur
-    public function getRolKleur($rolId)
-    {
-        return match($rolId) {
-            1 => 'danger',
-            2 => 'primary',
-            3 => 'success',
-            4 => 'info',
-            default => 'secondary'
-        };
     }
 
     // check of het huidige gebruiker is
@@ -137,3 +239,7 @@ class GebruikerController
 
 // run controller
 $controller = new GebruikerController();
+
+// laad view
+define('VIA_CONTROLLER', true);
+require_once __DIR__ . '/../../../frontend/gebruikers-page/gebruikers.php';

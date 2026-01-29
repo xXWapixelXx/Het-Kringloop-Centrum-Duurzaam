@@ -15,16 +15,16 @@ class VerkopenDAO extends Database
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("SELECT id, klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op FROM verkopen");
+        $stmt = $db->query("SELECT * FROM verkopen");
 
         $verkopen = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $verkopen[] = new Verkopen(
                 (int)$row['id'],
-                (int)$row['klant_id'],
-                (int)$row['artikel_id'],
-                (float)$row['verkoop_prijs_ex_btw'],
-                $row['verkocht_op']
+                (int)($row['klant_id'] ?? 0),
+                (int)($row['artikel_id'] ?? 0),
+                (float)($row['verkoop_prijs_ex_btw'] ?? 0),
+                $row['verkocht_op'] ?? date('Y-m-d')
             );
         }
 
@@ -35,7 +35,7 @@ class VerkopenDAO extends Database
     public function getById(int $id): ?Verkopen
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op FROM verkopen WHERE id = :id");
+        $stmt = $db->prepare("SELECT * FROM verkopen WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -46,10 +46,10 @@ class VerkopenDAO extends Database
 
         return new Verkopen(
             (int)$row['id'],
-            (int)$row['klant_id'],
-            (int)$row['artikel_id'],
-            (float)$row['verkoop_prijs_ex_btw'],
-            $row['verkocht_op']
+            (int)($row['klant_id'] ?? 0),
+            (int)($row['artikel_id'] ?? 0),
+            (float)($row['verkoop_prijs_ex_btw'] ?? 0),
+            $row['verkocht_op'] ?? date('Y-m-d')
         );
     }
 
@@ -57,7 +57,7 @@ class VerkopenDAO extends Database
     public function getByKlantId(int $klantId): array
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, klant_id, artikel_id, verkoop_prijs_ex_btw, verkocht_op FROM verkopen WHERE klant_id = :klant_id");
+        $stmt = $db->prepare("SELECT * FROM verkopen WHERE klant_id = :klant_id");
         $stmt->bindValue(':klant_id', $klantId, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -65,17 +65,17 @@ class VerkopenDAO extends Database
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $verkopen[] = new Verkopen(
                 (int)$row['id'],
-                (int)$row['klant_id'],
-                (int)$row['artikel_id'],
-                (float)$row['verkoop_prijs_ex_btw'],
-                $row['verkocht_op']
+                (int)($row['klant_id'] ?? 0),
+                (int)($row['artikel_id'] ?? 0),
+                (float)($row['verkoop_prijs_ex_btw'] ?? 0),
+                $row['verkocht_op'] ?? date('Y-m-d')
             );
         }
 
         return $verkopen;
     }
 
-    // maakt een nieuwe verkoop aan en geeft de nieuwe id terug
+    // maakt een nieuwe verkoop aan
     public function create(Verkopen $verkoop): int
     {
         $db = $this->connect();
@@ -94,7 +94,7 @@ class VerkopenDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een verkoop bij op basis van id
+    // werkt een verkoop bij
     public function update(Verkopen $verkoop): bool
     {
         $db = $this->connect();
@@ -116,7 +116,7 @@ class VerkopenDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een verkoop op basis van id
+    // verwijdert een verkoop
     public function delete(int $id): bool
     {
         $db = $this->connect();
@@ -124,6 +124,59 @@ class VerkopenDAO extends Database
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 
         return $stmt->execute();
+    }
+
+    // haalt maandoverzicht opbrengst verkopen op (US-30)
+    public function getMaandOverzicht(int $jaar, int $maand): array
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            SELECT v.id, v.artikel_id, v.verkoop_prijs_ex_btw, v.verkocht_op, a.naam as artikel_naam, k.naam as klant_naam
+            FROM verkopen v
+            LEFT JOIN artikel a ON v.artikel_id = a.id
+            LEFT JOIN klant k ON v.klant_id = k.id
+            WHERE YEAR(v.verkocht_op) = :jaar AND MONTH(v.verkocht_op) = :maand
+            ORDER BY v.verkocht_op DESC
+        ");
+        $stmt->bindValue(':jaar', $jaar, PDO::PARAM_INT);
+        $stmt->bindValue(':maand', $maand, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // bereken totale opbrengst per maand (US-30)
+    public function getTotaalOpbrengstMaand(int $jaar, int $maand): float
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            SELECT COALESCE(SUM(verkoop_prijs_ex_btw), 0) as totaal
+            FROM verkopen
+            WHERE YEAR(verkocht_op) = :jaar AND MONTH(verkocht_op) = :maand
+        ");
+        $stmt->bindValue(':jaar', $jaar, PDO::PARAM_INT);
+        $stmt->bindValue(':maand', $maand, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (float)($row['totaal'] ?? 0);
+    }
+
+    // tel totaal aantal verkopen per maand (US-30)
+    public function getTotaalAantalMaand(int $jaar, int $maand): int
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as totaal
+            FROM verkopen
+            WHERE YEAR(verkocht_op) = :jaar AND MONTH(verkocht_op) = :maand
+        ");
+        $stmt->bindValue(':jaar', $jaar, PDO::PARAM_INT);
+        $stmt->bindValue(':maand', $maand, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['totaal'] ?? 0);
     }
 }
 ?>
