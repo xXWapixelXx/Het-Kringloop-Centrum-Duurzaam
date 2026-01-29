@@ -20,15 +20,5 @@ class VerbodenArtikel {
     public function getId() {
         return $this->id;
     }
-
-    // getter voor omschrijving
-    public function getOmschrijving() {
-        return $this->omschrijving;
-    }
-
-    // setter voor omschrijving
-    public function setOmschrijving($omschrijving) {
-        $this->omschrijving = $omschrijving;
-    }
 }
 ?>

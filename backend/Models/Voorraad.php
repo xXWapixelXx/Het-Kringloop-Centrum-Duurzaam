@@ -22,22 +22,5 @@ class Voorraad {
     public function getId() {
         return $this->id;
     }
-
-    public function getArtikelId() {
-        return $this->artikel_id;
-    }
-
-    public function getHoeveelheid() {
-        return $this->hoeveelheid;
-    }
-
-    // setters
-    public function setArtikelId($artikel_id) {
-        $this->artikel_id = $artikel_id;
-    }
-
-    public function setHoeveelheid($hoeveelheid) {
-        $this->hoeveelheid = $hoeveelheid;
-    }
 }
 ?>

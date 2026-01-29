@@ -64,6 +64,7 @@ class VoorraadController
             if ($this->meldingType === 'success') {
                 $_SESSION['voorraad_melding'] = $this->melding;
                 $_SESSION['voorraad_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }

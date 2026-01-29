@@ -20,15 +20,5 @@ class Status {
     public function getId() {
         return $this->id;
     }
-
-    // getter voor status
-    public function getStatus() {
-        return $this->status;
-    }
-
-    // setter voor status
-    public function setStatus($status) {
-        $this->status = $status;
-    }
 }
 ?>
