@@ -2,10 +2,10 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Categorie beheer template
+// Beschrijving: Verboden artikelen beheer template
 
 if (!defined('VIA_CONTROLLER')) {
-    header('Location: ../../backend/Controllers/categorie/CategorieController.php');
+    header('Location: ../../backend/Controllers/verbodenartikel/VerbodenArtikelController.php');
     exit;
 }
 ?>
@@ -14,7 +14,7 @@ if (!defined('VIA_CONTROLLER')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categorieën - Kringloop Centrum Duurzaam</title>
+    <title>Verboden artikelen - Kringloop Centrum Duurzaam</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -68,7 +68,7 @@ if (!defined('VIA_CONTROLLER')) {
                     <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Admin</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="../gebruiker/GebruikerController.php">Gebruikersbeheer</a></li>
-                        <li><a class="dropdown-item" href="CategorieController.php">Categorieën</a></li>
+                        <li><a class="dropdown-item" href="../categorie/CategorieController.php">Categorieën</a></li>
                         <li><a class="dropdown-item" href="../verbodenartikel/VerbodenArtikelController.php">Verboden artikelen</a></li>
                     </ul>
                 </li>
@@ -91,8 +91,8 @@ if (!defined('VIA_CONTROLLER')) {
     <?php endif; ?>
 
     <div class="page-header">
-        <h1 class="page-title">Categorieën</h1>
-        <button class="btn btn-action" data-bs-toggle="modal" data-bs-target="#nieuweCategorieModal">Nieuwe Categorie</button>
+        <h1 class="page-title">Verboden artikelen</h1>
+        <button class="btn btn-action" data-bs-toggle="modal" data-bs-target="#nieuwVerbodenArtikelModal">Nieuw verboden artikel</button>
     </div>
 
     <div class="data-table">
@@ -100,25 +100,25 @@ if (!defined('VIA_CONTROLLER')) {
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Categorie</th>
+                    <th>Omschrijving</th>
                     <th style="width: 60px;"></th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($controller->categorieen)): ?>
+                <?php if (empty($controller->verbodenArtikelen)): ?>
                 <tr>
-                    <td colspan="3" class="text-center text-muted py-4">Geen categorieën gevonden</td>
+                    <td colspan="3" class="text-center text-muted py-4">Geen verboden artikelen gevonden</td>
                 </tr>
                 <?php else: ?>
-                <?php foreach ($controller->categorieen as $categorie): ?>
+                <?php foreach ($controller->verbodenArtikelen as $item): ?>
                 <tr>
-                    <td><?php echo $categorie->id; ?></td>
-                    <td><?php echo htmlspecialchars($categorie->categorie); ?></td>
+                    <td><?php echo $item->id; ?></td>
+                    <td><?php echo htmlspecialchars($item->omschrijving); ?></td>
                     <td>
                         <div class="dropdown">
                             <button class="actions-btn" data-bs-toggle="dropdown">...</button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item text-danger" href="?delete=<?php echo $categorie->id; ?>" onclick="return confirm('Weet je zeker dat je deze categorie wilt verwijderen?')">Verwijderen</a></li>
+                                <li><a class="dropdown-item text-danger" href="?delete=<?php echo $item->id; ?>" onclick="return confirm('Weet je zeker dat je dit verboden artikel wilt verwijderen?')">Verwijderen</a></li>
                             </ul>
                         </div>
                     </td>
@@ -134,12 +134,12 @@ if (!defined('VIA_CONTROLLER')) {
     </div>
 </div>
 
-<!-- Modal voor nieuwe categorie -->
-<div class="modal fade" id="nieuweCategorieModal" tabindex="-1">
+<!-- Modal voor nieuw verboden artikel -->
+<div class="modal fade" id="nieuwVerbodenArtikelModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Nieuwe Categorie</h5>
+                <h5 class="modal-title">Nieuw verboden artikel</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
@@ -147,8 +147,8 @@ if (!defined('VIA_CONTROLLER')) {
                     <input type="hidden" name="actie" value="toevoegen">
 
                     <div class="mb-3">
-                        <label class="form-label">Categorie *</label>
-                        <input type="text" class="form-control" name="categorie" required>
+                        <label class="form-label">Omschrijving *</label>
+                        <input type="text" class="form-control" name="omschrijving" placeholder="bijv. Matrassen, verf" required>
                     </div>
                 </div>
                 <div class="modal-footer">

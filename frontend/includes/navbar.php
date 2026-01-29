@@ -50,6 +50,7 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/Het-Kringloop-Centrum-Duurzaam/backend/Controllers/gebruiker/GebruikerController.php">Gebruikersbeheer</a></li>
                         <li><a class="dropdown-item" href="/Het-Kringloop-Centrum-Duurzaam/backend/Controllers/categorie/CategorieController.php">Categorieën</a></li>
+                        <li><a class="dropdown-item" href="/Het-Kringloop-Centrum-Duurzaam/backend/Controllers/verbodenartikel/VerbodenArtikelController.php">Verboden artikelen</a></li>
                         <li><a class="dropdown-item" href="/Het-Kringloop-Centrum-Duurzaam/backend/Controllers/rapportage/RapportageController.php">Rapportages</a></li>
                     </ul>
                 </li>

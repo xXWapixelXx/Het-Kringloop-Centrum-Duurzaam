@@ -74,6 +74,7 @@ if (!defined('VIA_CONTROLLER')) {
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="../gebruiker/GebruikerController.php">Gebruikersbeheer</a></li>
                         <li><a class="dropdown-item" href="../categorie/CategorieController.php">Categorieën</a></li>
+                        <li><a class="dropdown-item" href="../verbodenartikel/VerbodenArtikelController.php">Verboden artikelen</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="RapportController.php">Maandoverzichten</a></li>
                     </ul>

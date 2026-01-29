@@ -141,6 +141,7 @@ $magAdmin = ($rolId === 1);
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="<?php echo $basisPad; ?>/backend/Controllers/gebruiker/GebruikerController.php">Gebruikersbeheer</a></li>
                         <li><a class="dropdown-item" href="<?php echo $basisPad; ?>/backend/Controllers/categorie/CategorieController.php">Categorieën</a></li>
+                        <li><a class="dropdown-item" href="<?php echo $basisPad; ?>/backend/Controllers/verbodenartikel/VerbodenArtikelController.php">Verboden artikelen</a></li>
                     </ul>
                 </li>
                 <?php endif; ?>
