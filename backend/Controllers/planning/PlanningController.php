@@ -90,6 +90,7 @@ class PlanningController
             if ($this->meldingType === 'success') {
                 $_SESSION['planning_melding'] = $this->melding;
                 $_SESSION['planning_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -101,6 +102,7 @@ class PlanningController
             if ($this->meldingType === 'success') {
                 $_SESSION['planning_melding'] = $this->melding;
                 $_SESSION['planning_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -112,6 +114,7 @@ class PlanningController
             $this->dao->delete($id);
             $_SESSION['planning_melding'] = "Rit verwijderd.";
             $_SESSION['planning_melding_type'] = "warning";
+            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }

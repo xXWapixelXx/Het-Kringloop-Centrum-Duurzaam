@@ -64,6 +64,7 @@ class KlantController
             if ($this->meldingType === 'success') {
                 $_SESSION['klant_melding'] = $this->melding;
                 $_SESSION['klant_melding_type'] = $this->meldingType;
+                // redirect naar klantenpagina
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }

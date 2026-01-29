@@ -85,6 +85,7 @@ class VerkopenController
             if ($this->meldingType === 'success') {
                 $_SESSION['verkopen_melding'] = $this->melding;
                 $_SESSION['verkopen_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -96,6 +97,7 @@ class VerkopenController
             if ($this->meldingType === 'success') {
                 $_SESSION['verkopen_melding'] = $this->melding;
                 $_SESSION['verkopen_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -107,6 +109,7 @@ class VerkopenController
             $this->dao->delete($id);
             $_SESSION['verkopen_melding'] = "Verkoop verwijderd.";
             $_SESSION['verkopen_melding_type'] = "warning";
+            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }

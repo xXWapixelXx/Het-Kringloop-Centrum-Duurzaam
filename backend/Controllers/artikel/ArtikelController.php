@@ -66,6 +66,7 @@ class ArtikelController
             if ($this->meldingType === 'success') {
                 $_SESSION['artikel_melding'] = $this->melding;
                 $_SESSION['artikel_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -77,6 +78,7 @@ class ArtikelController
             if ($this->meldingType === 'success') {
                 $_SESSION['artikel_melding'] = $this->melding;
                 $_SESSION['artikel_melding_type'] = $this->meldingType;
+                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -88,6 +90,7 @@ class ArtikelController
             $this->dao->delete($id);
             $_SESSION['artikel_melding'] = "Artikel verwijderd.";
             $_SESSION['artikel_melding_type'] = "warning";
+            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }
