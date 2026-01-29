@@ -55,18 +55,7 @@ class LoginController
             return;
         }
 
-        // controleer wachtwoord
-        $wachtwoordCorrect = false;
-
-        // als wachtwoord gehashed is (begint met $2y$)
-        if (strpos($gebruiker->wachtwoord, '$2y$') === 0) {
-            $wachtwoordCorrect = password_verify($wachtwoord, $gebruiker->wachtwoord);
-        } else {
-            // plain text vergelijking (voor test data)
-            $wachtwoordCorrect = ($wachtwoord === $gebruiker->wachtwoord);
-        }
-
-        if ($wachtwoordCorrect) {
+        if (password_verify($wachtwoord, $gebruiker->wachtwoord)) {
             $_SESSION['gebruiker_id'] = $gebruiker->id;
             $_SESSION['gebruikersnaam'] = $gebruiker->gebruikersnaam;
             $_SESSION['rol_id'] = $gebruiker->rol_id;
