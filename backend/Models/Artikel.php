@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Model class voor artikelen in de kringloopwinkel
+// Beschrijving: Model voor één artikel. Alleen data (FO 3.6: naam, omschrijving, categorie, merk, kleur, maat, ean, prijs); DAO vult dit van database-rij.
 
 declare(strict_types=1);
 
@@ -17,7 +17,7 @@ class Artikel {
     public $ean;
     public $prijs_ex_btw;
 
-    // constructor - zet de basis gegevens
+    // Vul object; DAO gebruikt dit om Artikel van database-rij te maken
     public function __construct(
         $id = 0,
         $categorie_id = 0,
@@ -40,12 +40,11 @@ class Artikel {
         $this->prijs_ex_btw = $prijs_ex_btw;
     }
 
-    // berekent prijs inclusief BTW (21%)
+    // Prijs inclusief 21% BTW voor weergave
     public function getPrijsIncBtw() {
         return $this->prijs_ex_btw * 1.21;
     }
 
-    // getter voor id
     public function getId() {
         return $this->id;
     }

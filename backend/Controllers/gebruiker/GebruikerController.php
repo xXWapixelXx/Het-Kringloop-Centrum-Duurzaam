@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor gebruikersbeheer (alleen Directie)
+// Beschrijving: Controller voor gebruikersbeheer. Constructor: checkLogin, checkDirectie (rol 1), DAO, handleActions, loadGebruikers. Alleen Directie mag deze pagina.
 
 declare(strict_types=1);
 
@@ -17,7 +17,7 @@ class GebruikerController
     public $gebruikers = [];
     public $editGebruiker = null;
 
-    // rollen (zelfde volgorde als Config/rollen.php)
+    // Mapping rol_id -> rolnaam (zelfde als Config/rollen.php)
     public $rollen = [
         1 => 'Directie',
         2 => 'Winkelpersoneel',
@@ -42,7 +42,7 @@ class GebruikerController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     private function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -51,7 +51,7 @@ class GebruikerController
         }
     }
 
-    // check of gebruiker Directie is
+    // rol_id != 1 = geen Directie; redirect naar dashboard
     private function checkDirectie()
     {
         if ($_SESSION['rol_id'] != 1) {
@@ -60,42 +60,36 @@ class GebruikerController
         }
     }
 
-    // verwerk acties
+    // POST toevoegen/bewerken/reset_wachtwoord; GET delete/blokkeer/edit
     private function handleActions()
     {
-        // nieuwe gebruiker toevoegen
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
         }
 
-        // gebruiker bewerken (rol wijzigen)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
             $this->handleBewerken();
         }
 
-        // gebruiker verwijderen
         if (isset($_GET['delete'])) {
             $this->handleVerwijderen((int)$_GET['delete']);
         }
 
-        // gebruiker blokkeren/deblokkeren (US-32)
         if (isset($_GET['blokkeer'])) {
             $this->handleBlokkeer((int)$_GET['blokkeer']);
         }
 
-        // wachtwoord resetten (US-7)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'reset_wachtwoord') {
             $this->handleResetWachtwoord();
         }
 
-        // edit mode laden
         if (isset($_GET['edit'])) {
             $id = (int)$_GET['edit'];
             $this->editGebruiker = $this->dao->getById($id);
         }
     }
 
-    // voeg nieuwe gebruiker toe
+    // Valideer velden; check of gebruikersnaam al bestaat; password_hash; DAO create; redirect
     private function handleToevoegen()
     {
         $gebruikersnaam = trim($_POST['gebruikersnaam'] ?? '');
@@ -108,7 +102,6 @@ class GebruikerController
             return;
         }
 
-        // check of gebruikersnaam al bestaat
         $bestaand = $this->dao->getByGebruikersnaam($gebruikersnaam);
         if ($bestaand) {
             $this->melding = "Gebruikersnaam bestaat al.";
@@ -125,7 +118,7 @@ class GebruikerController
         exit;
     }
 
-    // bewerk gebruiker (rol wijzigen)
+    // Haal gebruiker op; update rol_id; DAO update; redirect
     private function handleBewerken()
     {
         $id = (int)($_POST['id'] ?? 0);
@@ -137,7 +130,6 @@ class GebruikerController
             return;
         }
 
-        // haal bestaande gebruiker op
         $gebruiker = $this->dao->getById($id);
         if (!$gebruiker) {
             $this->melding = "Gebruiker niet gevonden.";
@@ -145,7 +137,6 @@ class GebruikerController
             return;
         }
 
-        // update rol
         $gebruiker->rol_id = $rol_id;
         $this->dao->update($gebruiker);
 
@@ -155,7 +146,7 @@ class GebruikerController
         exit;
     }
 
-    // verwijder gebruiker
+    // Mag niet jezelf verwijderen; anders DAO delete, redirect
     private function handleVerwijderen($id)
     {
         if ($id == $_SESSION['gebruiker_id']) {
@@ -171,7 +162,7 @@ class GebruikerController
         exit;
     }
 
-    // blokkeer of deblokkeer gebruiker (US-32)
+    // Mag niet jezelf blokkeren; DAO toggleBlokkeer (US-32); redirect
     private function handleBlokkeer($id)
     {
         if ($id == $_SESSION['gebruiker_id']) {
@@ -195,7 +186,7 @@ class GebruikerController
         exit;
     }
 
-    // reset wachtwoord voor gebruiker (US-7)
+    // Valideer id en nieuw wachtwoord; password_hash; DAO update; redirect (US-7)
     private function handleResetWachtwoord()
     {
         $id = (int)($_POST['id'] ?? 0);
@@ -214,7 +205,6 @@ class GebruikerController
             return;
         }
 
-        // update wachtwoord
         $gebruiker->wachtwoord = password_hash($nieuwWachtwoord, PASSWORD_DEFAULT);
         $this->dao->update($gebruiker);
 
@@ -224,22 +214,22 @@ class GebruikerController
         exit;
     }
 
-    // laad alle gebruikers
+    // DAO getAll; vult $gebruikers voor de view
     private function loadGebruikers()
     {
         $this->gebruikers = $this->dao->getAll();
     }
 
-    // check of het huidige gebruiker is
+    // Voor view: mag deze rij bewerken/verwijderen? (niet jezelf)
     public function isHuidigeGebruiker($id)
     {
         return $id == $_SESSION['gebruiker_id'];
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new GebruikerController();
 
-// laad view
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/gebruikers-page/gebruikers.php';

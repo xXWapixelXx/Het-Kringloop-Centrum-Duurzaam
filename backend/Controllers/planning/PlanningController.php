@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor ritten planning (ophalen en bezorgen)
+// Beschrijving: Controller voor ritten planning. Constructor: checkLogin, checkRol (rol 1 of 4 mag beheren; rol 2 alleen bekijken), DAO, handleFilters, handleActions, loadArtikelen/Klanten/Planningen. PDF 3.5.
 
 declare(strict_types=1);
 
@@ -20,10 +20,9 @@ class PlanningController
     public $artikelen = [];
     public $klanten = [];
     public $editPlanning = null;
-    // true als Winkelpersoneel: alleen bekijken, geen toevoegen/bewerken/verwijderen (PDF 3.5)
+    // rol 2 (Winkelpersoneel): alleen bekijken, geen toevoegen/bewerken/verwijderen
     public $alleenBekijken = false;
 
-    // filters voor datum 
     public $filterDatum = "";
 
     private $dao;
@@ -46,7 +45,7 @@ class PlanningController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -55,7 +54,7 @@ class PlanningController
         }
     }
 
-    // verwerk filters 
+    // Haal filter_datum uit GET voor datumfilter
     private function handleFilters()
     {
         if (isset($_GET['filter_datum']) && $_GET['filter_datum'] !== '') {
@@ -63,7 +62,7 @@ class PlanningController
         }
     }
 
-    // Directie en Chauffeur mogen ritten beheren; Winkelpersoneel alleen bekijken (PDF 3.5)
+    // rol 1 (Directie) of 4 (Chauffeur) mag beheren; rol 2 (Winkelpersoneel) alleen bekijken; anders redirect
     private function checkRol()
     {
         $rol = isset($_SESSION['rol_id']) ? (int)$_SESSION['rol_id'] : 0;
@@ -78,48 +77,41 @@ class PlanningController
         exit;
     }
 
-    // verwerk acties (toevoegen, bewerken, verwijderen)
+    // Als alleenBekijken: niks; anders POST toevoegen/bewerken, GET delete/edit
     public function handleActions()
     {
         if ($this->alleenBekijken) {
             return;
         }
-        // toevoegen
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
             if ($this->meldingType === 'success') {
                 $_SESSION['planning_melding'] = $this->melding;
                 $_SESSION['planning_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // bewerken
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
             $this->handleBewerken();
             if ($this->meldingType === 'success') {
                 $_SESSION['planning_melding'] = $this->melding;
                 $_SESSION['planning_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // verwijderen
         if (isset($_GET['delete'])) {
             $id = (int)$_GET['delete'];
             $this->dao->delete($id);
             $_SESSION['planning_melding'] = "Rit verwijderd.";
             $_SESSION['planning_melding_type'] = "warning";
-            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }
 
-        // edit mode laden
         if (isset($_GET['edit'])) {
             $id = (int)$_GET['edit'];
             $this->editPlanning = $this->dao->getById($id);

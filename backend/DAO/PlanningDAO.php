@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van planningen in de database
+// Beschrijving: DAO voor planningen (ritten). Extends Database; doet queries en maakt Planning-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Planning.php';
 
 class PlanningDAO extends Database
 {
-    // haalt alle planningen op
+    // Verbinding via parent; query; per rij Planning-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -35,7 +35,7 @@ class PlanningDAO extends Database
         return $planningen;
     }
 
-    // haalt één planning op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Planning of null
     public function getById(int $id): ?Planning
     {
         $db = $this->connect();
@@ -62,7 +62,7 @@ class PlanningDAO extends Database
         );
     }
 
-    // maakt een nieuwe planning aan en geeft de nieuwe id terug
+    // INSERT met prepare + bindValue voor alle velden; lastInsertId() geeft nieuwe id
     public function create(Planning $planning): int
     {
         $db = $this->connect();
@@ -106,7 +106,7 @@ class PlanningDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een planning op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();
@@ -116,7 +116,7 @@ class PlanningDAO extends Database
         return $stmt->execute();
     }
 
-    // haalt planningen op gefilterd op datum (US-28)
+    // prepare + bindValue(:datum); DATE(afspraak_op) = datum; US-28
     public function getByDatum(string $datum): array
     {
         $db = $this->connect();

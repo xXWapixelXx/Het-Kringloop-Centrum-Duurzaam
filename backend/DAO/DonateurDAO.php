@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van donateurs (mensen die goederen aanleveren)
+// Beschrijving: DAO voor donateurs. Extends Database; doet queries en maakt Donateur-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Donateur.php';
 
 class DonateurDAO extends Database
 {
-    // haalt alle donateurs op
+    // Verbinding via parent; query; per rij Donateur-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -35,7 +35,7 @@ class DonateurDAO extends Database
         return $donateurs;
     }
 
-    // haalt één donateur op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Donateur of null
     public function getById(int $id): ?Donateur
     {
         $db = $this->connect();
@@ -61,7 +61,7 @@ class DonateurDAO extends Database
         );
     }
 
-    // zoekt donateurs op naam
+    // prepare + bindValue(:naam) met LIKE; per rij Donateur in array
     public function zoekOpNaam(string $naam): array
     {
         $db = $this->connect();
@@ -87,7 +87,7 @@ class DonateurDAO extends Database
         return $donateurs;
     }
 
-    // maakt een nieuwe donateur aan en geeft de nieuwe id terug
+    // INSERT met prepare + bindValue voor alle velden; lastInsertId() geeft nieuwe id
     public function create(Donateur $donateur): int
     {
         $db = $this->connect();
@@ -110,7 +110,7 @@ class DonateurDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een donateur bij op basis van id
+    // UPDATE met prepare + bindValue voor alle velden; execute geeft true/false
     public function update(Donateur $donateur): bool
     {
         $db = $this->connect();
@@ -140,7 +140,7 @@ class DonateurDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een donateur op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van verboden artikelen
+// Beschrijving: DAO voor verboden artikelen. Extends Database; doet queries en maakt VerbodenArtikel-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/VerbodenArtikel.php';
 
 class VerbodenArtikelDAO extends Database
 {
-    // haalt alle verboden artikelen op
+    // Verbinding via parent; query zonder parameters; per rij VerbodenArtikel-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -28,7 +28,7 @@ class VerbodenArtikelDAO extends Database
         return $verbodenArtikelen;
     }
 
-    // haalt één verboden artikel op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als VerbodenArtikel of null
     public function getById(int $id): ?VerbodenArtikel
     {
         $db = $this->connect();
@@ -47,7 +47,7 @@ class VerbodenArtikelDAO extends Database
         );
     }
 
-    // zoekt in verboden artikelen op omschrijving
+    // prepare + bindValue(:zoekterm) met LIKE; per rij VerbodenArtikel in array
     public function zoekOpOmschrijving(string $zoekterm): array
     {
         $db = $this->connect();
@@ -66,7 +66,7 @@ class VerbodenArtikelDAO extends Database
         return $verbodenArtikelen;
     }
 
-    // maakt een nieuw verboden artikel aan en geeft de nieuwe id terug
+    // INSERT met prepare + bindValue(:omschrijving); lastInsertId() geeft nieuwe id
     public function create(VerbodenArtikel $verbodenArtikel): int
     {
         $db = $this->connect();
@@ -78,7 +78,7 @@ class VerbodenArtikelDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een verboden artikel bij op basis van id
+    // UPDATE met prepare + bindValue voor id en omschrijving; execute geeft true/false
     public function update(VerbodenArtikel $verbodenArtikel): bool
     {
         $db = $this->connect();
@@ -90,7 +90,7 @@ class VerbodenArtikelDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een verboden artikel op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

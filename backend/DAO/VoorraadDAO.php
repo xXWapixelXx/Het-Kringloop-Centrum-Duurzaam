@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van voorraad in de database
+// Beschrijving: DAO voor voorraad. Extends Database; doet queries en maakt Voorraad-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Voorraad.php';
 
 class VoorraadDAO extends Database
 {
-    // haalt alle voorraad op
+    // Verbinding via parent; query; per rij Voorraad-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -29,7 +29,7 @@ class VoorraadDAO extends Database
         return $voorraadLijst;
     }
 
-    // haalt één voorraad op
+    // prepare + bindValue(:id) + execute; één rij als Voorraad of null
     public function getById(int $id): ?Voorraad
     {
         $db = $this->connect();
@@ -50,7 +50,7 @@ class VoorraadDAO extends Database
         return $voorraad;
     }
 
-    // voeg nieuwe voorraad toe (functioneel ontwerp 3.4: locatie, aantal, wel/niet reparatie, verkoop-gereed)
+    // INSERT met prepare + bindValue voor artikel_id en aantal; lastInsertId() geeft nieuwe id
     public function create(Voorraad $voorraad): int
     {
         $db = $this->connect();
@@ -65,7 +65,7 @@ class VoorraadDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // verwijdert voorraad
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();
@@ -75,7 +75,7 @@ class VoorraadDAO extends Database
         return $stmt->execute();
     }
 
-    // haalt maandoverzicht binnengebrachte artikelen op (US-29)
+    // prepare + bindValue(:jaar, :maand); JOIN met artikel voor naam; US-29
     public function getMaandOverzicht(int $jaar, int $maand): array
     {
         $db = $this->connect();
@@ -93,7 +93,7 @@ class VoorraadDAO extends Database
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // tel totaal aantal binnengebrachte artikelen per maand (US-29)
+    // prepare + bindValue(:jaar, :maand); SUM(aantal) voor maand; US-29
     public function getTotaalMaand(int $jaar, int $maand): int
     {
         $db = $this->connect();

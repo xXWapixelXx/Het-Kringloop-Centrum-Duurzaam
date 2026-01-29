@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van verkopen in de database
+// Beschrijving: DAO voor verkopen. Extends Database; doet queries en maakt Verkopen-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Verkopen.php';
 
 class VerkopenDAO extends Database
 {
-    // haalt alle verkopen op
+    // Verbinding via parent; query; per rij Verkopen-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -31,7 +31,7 @@ class VerkopenDAO extends Database
         return $verkopen;
     }
 
-    // haalt één verkoop op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Verkopen of null
     public function getById(int $id): ?Verkopen
     {
         $db = $this->connect();
@@ -53,7 +53,7 @@ class VerkopenDAO extends Database
         );
     }
 
-    // haalt verkopen op per klant
+    // prepare + bindValue(:klant_id) + execute; per rij Verkopen in array
     public function getByKlantId(int $klantId): array
     {
         $db = $this->connect();
@@ -75,7 +75,7 @@ class VerkopenDAO extends Database
         return $verkopen;
     }
 
-    // maakt een nieuwe verkoop aan
+    // INSERT met prepare + bindValue voor alle velden; lastInsertId() geeft nieuwe id
     public function create(Verkopen $verkoop): int
     {
         $db = $this->connect();
@@ -94,7 +94,7 @@ class VerkopenDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een verkoop bij
+    // UPDATE met prepare + bindValue voor alle velden; execute geeft true/false
     public function update(Verkopen $verkoop): bool
     {
         $db = $this->connect();
@@ -116,7 +116,7 @@ class VerkopenDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een verkoop
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();
@@ -126,7 +126,7 @@ class VerkopenDAO extends Database
         return $stmt->execute();
     }
 
-    // haalt maandoverzicht opbrengst verkopen op (US-30)
+    // prepare + bindValue(:jaar, :maand); JOIN met artikel en klant; US-30
     public function getMaandOverzicht(int $jaar, int $maand): array
     {
         $db = $this->connect();
@@ -145,7 +145,7 @@ class VerkopenDAO extends Database
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // bereken totale opbrengst per maand (US-30)
+    // prepare + bindValue(:jaar, :maand); SUM(verkoop_prijs_ex_btw) voor maand; US-30
     public function getTotaalOpbrengstMaand(int $jaar, int $maand): float
     {
         $db = $this->connect();
@@ -162,7 +162,7 @@ class VerkopenDAO extends Database
         return (float)($row['totaal'] ?? 0);
     }
 
-    // tel totaal aantal verkopen per maand (US-30)
+    // prepare + bindValue(:jaar, :maand); COUNT(*) voor maand; US-30
     public function getTotaalAantalMaand(int $jaar, int $maand): int
     {
         $db = $this->connect();

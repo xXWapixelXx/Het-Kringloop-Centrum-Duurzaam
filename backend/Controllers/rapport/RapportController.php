@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor rapportages (US-29 en US-30)
+// Beschrijving: Controller voor rapportages. Constructor: checkLogin, checkRol (alleen rol 1), handleFilters (jaar/maand), loadRapporten. Alleen Directie (US-29, US-30). US-29: binnengebracht; US-30: opbrengst verkopen.
 
 declare(strict_types=1);
 
@@ -16,18 +16,15 @@ class RapportController
     public $melding = "";
     public $meldingType = "";
 
-    // geselecteerde jaar en maand
     public $jaar;
     public $maand;
 
-    // rapport data
     public $binnengebracht = [];
     public $totaalBinnengebracht = 0;
     public $verkopen = [];
     public $totaalOpbrengst = 0.0;
     public $totaalAantalVerkopen = 0;
 
-    // maanden namen
     public $maandNamen = [
         1 => 'Januari', 2 => 'Februari', 3 => 'Maart', 4 => 'April',
         5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Augustus',
@@ -47,7 +44,7 @@ class RapportController
         $this->loadRapporten();
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     private function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -56,7 +53,7 @@ class RapportController
         }
     }
 
-    // alleen Directie mag rapporten bekijken (US-29, US-30)
+    // Alleen rol_id 1 (Directie) mag; anders redirect naar dashboard
     private function checkRol()
     {
         $rol = isset($_SESSION['rol_id']) ? (int)$_SESSION['rol_id'] : 0;
@@ -66,32 +63,29 @@ class RapportController
         }
     }
 
-    // verwerk filters voor jaar en maand
+    // Haal jaar/maand uit GET; valideer maand 1–12
     private function handleFilters()
     {
         $this->jaar = isset($_GET['jaar']) ? (int)$_GET['jaar'] : (int)date('Y');
         $this->maand = isset($_GET['maand']) ? (int)$_GET['maand'] : (int)date('m');
 
-        // valideer maand
         if ($this->maand < 1 || $this->maand > 12) {
             $this->maand = (int)date('m');
         }
     }
 
-    // laad rapport data
+    // VoorraadDAO getMaandOverzicht/getTotaalMaand (US-29); VerkopenDAO getMaandOverzicht/getTotaalOpbrengstMaand/getTotaalAantalMaand (US-30)
     private function loadRapporten()
     {
-        // US-29: Maandoverzicht binnengebrachte artikelen
         $this->binnengebracht = $this->voorraadDao->getMaandOverzicht($this->jaar, $this->maand);
         $this->totaalBinnengebracht = $this->voorraadDao->getTotaalMaand($this->jaar, $this->maand);
 
-        // US-30: Maandoverzicht opbrengst verkopen
         $this->verkopen = $this->verkopenDao->getMaandOverzicht($this->jaar, $this->maand);
         $this->totaalOpbrengst = $this->verkopenDao->getTotaalOpbrengstMaand($this->jaar, $this->maand);
         $this->totaalAantalVerkopen = $this->verkopenDao->getTotaalAantalMaand($this->jaar, $this->maand);
     }
 
-    // haal beschikbare jaren op (laatste 5 jaar)
+    // Laatste 5 jaar voor dropdown (jaar filter)
     public function getBeschikbareJaren(): array
     {
         $huidigJaar = (int)date('Y');
@@ -102,16 +96,16 @@ class RapportController
         return $jaren;
     }
 
-    // format prijs
+    // Prijs formatteren voor weergave (komma decimaal, punt duizendtal)
     public function formatPrijs(float $prijs): string
     {
         return number_format($prijs, 2, ',', '.');
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new RapportController();
 
-// laad view
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/rapport-page/rapport.php';

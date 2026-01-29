@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Model class voor categorieen van artikelen
+// Beschrijving: Model voor één categorie. Alleen data (id, categorie); DAO vult dit van database-rij.
 
 declare(strict_types=1);
 
@@ -10,18 +10,16 @@ class Categorie {
     public $id;
     public $categorie;
 
-    // constructor - zet de basis gegevens
+    // Vul object; DAO gebruikt dit om Categorie van database-rij te maken
     public function __construct($id = 0, $categorie = "") {
         $this->id = $id;
         $this->categorie = $categorie;
     }
 
-    // getter voor id
     public function getId() {
         return $this->id;
     }
 
-    // getter voor categorie naam
     public function getCategorie() {
         return $this->categorie;
     }

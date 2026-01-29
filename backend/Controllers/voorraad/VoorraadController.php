@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor voorraad overzicht
+// Beschrijving: Controller voor voorraad. Constructor: checkLogin, checkRol (rol 1 of 3 = Directie/Magazijn), DAO, acties, laden. Alleen Directie en Magazijnmedewerker mogen deze pagina (PDF 3.5).
 
 declare(strict_types=1);
 
@@ -45,7 +45,7 @@ class VoorraadController
         }
     }
 
-    // Directie en Magazijnmedewerker mogen voorraad beheren (PDF 3.5)
+    // rol 1 (Directie) of 3 (Magazijnmedewerker) mag; anders redirect naar dashboard
     private function checkRol()
     {
         $rol = isset($_SESSION['rol_id']) ? (int)$_SESSION['rol_id'] : 0;
@@ -56,7 +56,7 @@ class VoorraadController
         exit;
     }
 
-    // verwerk acties
+    // POST actie=toevoegen -> handleToevoegen (redirect na success); GET delete -> DAO delete
     public function handleActions()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
@@ -64,7 +64,6 @@ class VoorraadController
             if ($this->meldingType === 'success') {
                 $_SESSION['voorraad_melding'] = $this->melding;
                 $_SESSION['voorraad_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
@@ -78,14 +77,14 @@ class VoorraadController
         }
     }
 
-    // laad artikelen voor dropdown
+    // ArtikelDAO getAll voor dropdown (artikel kiezen bij toevoegen)
     public function loadArtikelen()
     {
         $artikelDao = new ArtikelDAO();
         $this->artikelen = $artikelDao->getAll();
     }
 
-    // haal artikel naam op bij artikel_id (voor in voorraad tabel)
+    // Zoek in $this->artikelen op id; geef naam terug voor weergave in tabel
     public function getArtikelNaam(int $artikelId): string
     {
         foreach ($this->artikelen as $artikel) {
@@ -96,7 +95,7 @@ class VoorraadController
         return '-';
     }
 
-    // voeg voorraad toe
+    // Valideer artikel_id en hoeveelheid; maak Voorraad-model, DAO create, melding
     public function handleToevoegen()
     {
         $artikel_id = 0;
@@ -120,22 +119,21 @@ class VoorraadController
         $this->meldingType = "success";
     }
 
-    // laad voorraad
+    // DAO getAll; vult $voorraad voor de view
     public function loadVoorraad()
     {
         $this->voorraad = $this->dao->getAll();
     }
 
-    // tel resultaten
     public function countResultaten()
     {
         return count($this->voorraad);
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new VoorraadController();
 
-// laad view (markeer dat we via controller komen)
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/voorraad-page/voorraad.php';

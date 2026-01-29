@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor artikelen beheer
+// Beschrijving: Controller voor artikelen. Constructor: checkLogin, checkRol (rol 1 of 3), DAO, acties, loadCategorieen, loadArtikelen. Alleen Directie en Magazijnmedewerker (PDF 3.5).
 
 declare(strict_types=1);
 
@@ -37,7 +37,7 @@ class ArtikelController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -46,7 +46,7 @@ class ArtikelController
         }
     }
 
-    // Directie en Magazijnmedewerker mogen artikelen beheren (PDF 3.5)
+    // rol 1 of 3 mag; anders redirect naar dashboard
     private function checkRol()
     {
         $rol = isset($_SESSION['rol_id']) ? (int)$_SESSION['rol_id'] : 0;
@@ -57,59 +57,52 @@ class ArtikelController
         exit;
     }
 
-    // verwerk acties
+    // POST toevoegen/bewerken (redirect na success); GET delete/edit
     public function handleActions()
     {
-        // toevoegen
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
             if ($this->meldingType === 'success') {
                 $_SESSION['artikel_melding'] = $this->melding;
                 $_SESSION['artikel_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // bewerken
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
             $this->handleBewerken();
             if ($this->meldingType === 'success') {
                 $_SESSION['artikel_melding'] = $this->melding;
                 $_SESSION['artikel_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // verwijderen
         if (isset($_GET['delete'])) {
             $id = (int)$_GET['delete'];
             $this->dao->delete($id);
             $_SESSION['artikel_melding'] = "Artikel verwijderd.";
             $_SESSION['artikel_melding_type'] = "warning";
-            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }
 
-        // edit mode laden
         if (isset($_GET['edit'])) {
             $id = (int)$_GET['edit'];
             $this->editArtikel = $this->dao->getById($id);
         }
     }
 
-    // laad categorieen voor dropdown
+    // CategorieDAO getAll voor dropdown (categorie kiezen bij artikel)
     public function loadCategorieen()
     {
         $categorieDao = new CategorieDAO();
         $this->categorieen = $categorieDao->getAll();
     }
 
-    // voeg artikel toe
+    // Valideer categorie_id en naam; maak Artikel-model, DAO create, melding
     public function handleToevoegen()
     {
         $categorie_id = (int)($_POST['categorie_id'] ?? 0);
@@ -133,7 +126,7 @@ class ArtikelController
         $this->meldingType = "success";
     }
 
-    // bewerk artikel
+    // Valideer id, categorie_id, naam; maak Artikel-model, DAO update, melding
     public function handleBewerken()
     {
         $id = (int)($_POST['id'] ?? 0);
@@ -158,19 +151,18 @@ class ArtikelController
         $this->meldingType = "success";
     }
 
-    // laad artikelen
+    // DAO getAll; vult $artikelen voor de view
     public function loadArtikelen()
     {
         $this->artikelen = $this->dao->getAll();
     }
 
-    // tel resultaten
     public function countResultaten()
     {
         return count($this->artikelen);
     }
 
-    // haal categorie naam op
+    // Zoek in $this->categorieen op id; geef categorienaam terug voor weergave
     public function getCategorieNaam(int $categorieId): string
     {
         foreach ($this->categorieen as $cat) {
@@ -182,9 +174,9 @@ class ArtikelController
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new ArtikelController();
 
-// laad view (markeer dat we via controller komen)
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/artikel-page/artikel.php';

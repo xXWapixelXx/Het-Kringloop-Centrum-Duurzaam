@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van gebruikers in de database
+// Beschrijving: DAO voor gebruikers. Extends Database om connect() te gebruiken; doet queries en maakt Gebruiker-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Gebruiker.php';
 
 class GebruikerDAO extends Database
 {
-    // haalt alle gebruikers op
+    // Verbinding via parent, query zonder parameters; per rij een Gebruiker-object maken en in array teruggeven
     public function getAll(): array
     {
         $db = $this->connect();
@@ -31,7 +31,7 @@ class GebruikerDAO extends Database
         return $gebruikers;
     }
 
-    // haalt één gebruiker op op basis van id
+    // prepare + bindValue(:id) + execute: veilig tegen SQL-injectie; één rij ophalen en als Gebruiker-object teruggeven
     public function getById(int $id): ?Gebruiker
     {
         $db = $this->connect();
@@ -53,7 +53,7 @@ class GebruikerDAO extends Database
         );
     }
 
-    // haalt een gebruiker op op basis van gebruikersnaam (voor login)
+    // Voor login: prepare + bindValue(:gebruikersnaam) + execute; voorkomt SQL-injectie; geeft Gebruiker-object of null
     public function getByGebruikersnaam(string $gebruikersnaam): ?Gebruiker
     {
         $db = $this->connect();
@@ -75,7 +75,7 @@ class GebruikerDAO extends Database
         );
     }
 
-    // haalt gebruikers op per rol
+    // Zelfde patroon: prepare, bindValue(:rol_id), execute; per rij een Gebruiker in array
     public function getByRolId(int $rolId): array
     {
         $db = $this->connect();
@@ -97,7 +97,7 @@ class GebruikerDAO extends Database
         return $gebruikers;
     }
 
-    // maakt een nieuwe gebruiker aan en geeft de nieuwe id terug
+    // INSERT met prepared statement (alle velden gebonden); lastInsertId() geeft de nieuwe id terug
     public function create(Gebruiker $gebruiker): int
     {
         $db = $this->connect();
@@ -116,7 +116,7 @@ class GebruikerDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een gebruiker bij op basis van id
+    // UPDATE met prepare + bindValue voor alle velden; execute geeft true/false
     public function update(Gebruiker $gebruiker): bool
     {
         $db = $this->connect();
@@ -138,7 +138,7 @@ class GebruikerDAO extends Database
         return $stmt->execute();
     }
 
-    // blokkeer of deblokkeer een gebruiker (US-32)
+    // Zet geblokkeerd om (0->1 of 1->0) met één UPDATE; US-32
     public function toggleBlokkeer(int $id): bool
     {
         $db = $this->connect();
@@ -147,7 +147,7 @@ class GebruikerDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een gebruiker op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

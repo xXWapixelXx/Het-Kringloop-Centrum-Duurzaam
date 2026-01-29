@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Data Access Object (DAO) voor het beheren van artikelen in de database
+// Beschrijving: DAO voor artikelen. Extends Database; doet queries en maakt Artikel-objecten van database-rijen (FO 3.6).
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Artikel.php';
 
 class ArtikelDAO extends Database
 {
-    // haalt alle artikelen op (functioneel ontwerp 3.6: naam, omschrijving, categorie, merk, kleur, maat, ean)
+    // Verbinding via parent; query; per rij Artikel-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -35,7 +35,7 @@ class ArtikelDAO extends Database
         return $artikelen;
     }
 
-    // haalt één artikel op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Artikel of null
     public function getById(int $id): ?Artikel
     {
         $db = $this->connect();
@@ -61,7 +61,7 @@ class ArtikelDAO extends Database
         );
     }
 
-    // haalt artikelen op per categorie
+    // prepare + bindValue(:categorie_id) + execute; per rij Artikel in array
     public function getByCategorieId(int $categorieId): array
     {
         $db = $this->connect();
@@ -87,7 +87,7 @@ class ArtikelDAO extends Database
         return $artikelen;
     }
 
-    // maakt een nieuw artikel aan (functioneel ontwerp 3.6)
+    // INSERT met prepare + bindValue voor alle velden; lastInsertId() geeft nieuwe id
     public function create(Artikel $artikel): int
     {
         $db = $this->connect();
@@ -110,7 +110,7 @@ class ArtikelDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een bestaand artikel bij op basis van het id
+    // UPDATE met prepare + bindValue voor alle velden; execute geeft true/false
     public function update(Artikel $artikel): bool
     {
         $db = $this->connect();
@@ -140,7 +140,7 @@ class ArtikelDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een artikel op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

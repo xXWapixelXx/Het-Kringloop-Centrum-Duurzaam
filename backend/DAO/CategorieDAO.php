@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van categorieën in de database
+// Beschrijving: DAO voor categorieën. Extends Database; doet queries en maakt Categorie-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Categorie.php';
 
 class CategorieDAO extends Database
 {
-    // haalt alle categorieën op
+    // Verbinding via parent; query; per rij Categorie-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -28,7 +28,7 @@ class CategorieDAO extends Database
         return $categorieen;
     }
 
-    // haalt één categorie op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Categorie of null
     public function getById(int $id): ?Categorie
     {
         $db = $this->connect();
@@ -47,7 +47,7 @@ class CategorieDAO extends Database
         );
     }
 
-    // maakt een nieuwe categorie aan en geeft de nieuwe id terug
+    // INSERT met prepare + bindValue(:categorie); lastInsertId() geeft nieuwe id
     public function create(Categorie $categorie): int
     {
         $db = $this->connect();
@@ -78,7 +78,7 @@ class CategorieDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een categorie op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

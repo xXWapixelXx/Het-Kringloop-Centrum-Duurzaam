@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Navbar component voor alle paginas
+// Beschrijving: Navbar voor alle pagina’s. Admin-menu alleen als rol_id == 1 (Directie). Gebruikersnaam met htmlspecialchars tegen XSS.
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
@@ -42,6 +42,7 @@
                         <li><a class="dropdown-item" href="/Het-Kringloop-Centrum-Duurzaam/backend/Controllers/verkopen/VerkopenController.php">Verkopen</a></li>
                     </ul>
                 </li>
+                <?php // Alleen Directie (rol_id 1) ziet Admin-menu: Gebruikersbeheer, Categorieën, Verboden artikelen, Rapportages ?>
                 <?php if (isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1): ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -59,6 +60,7 @@
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <span class="nav-link">
+                        <?php // htmlspecialchars voorkomt XSS: tekens zoals < en > worden als tekst getoond, niet als code ?>
                         <?php echo htmlspecialchars($_SESSION['gebruikersnaam'] ?? 'Gast'); ?>
                     </span>
                 </li>

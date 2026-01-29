@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor dashboard pagina
+// Beschrijving: Controller voor dashboard. Constructor: checkLogin (sessie?), daarna loadUserData uit sessie en rollen-config.
 
 declare(strict_types=1);
 
@@ -23,7 +23,7 @@ class DashboardController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie (gebruiker_id) = niet ingelogd; zet isIngelogd true/false
     private function checkLogin()
     {
         if (isset($_SESSION['gebruiker_id'])) {
@@ -33,21 +33,20 @@ class DashboardController
         }
     }
 
-    // laad gebruiker data
+    // Haal gebruikersnaam en rol_id uit sessie; rolnaam uit Config/rollen.php (ROL_LEN)
     private function loadUserData()
     {
         $this->gebruikersnaam = $_SESSION['gebruikersnaam'];
         $this->rolId = $_SESSION['rol_id'];
 
-        // laad rol naam uit rollen mapping
         require __DIR__ . '/../../Config/rollen.php';
         $this->rolNaam = $ROL_LEN[$this->rolId] ?? 'Onbekend';
     }
 }
 
-// run controller
+// Maak controller (checkLogin, loadUserData); daarna view
 $controller = new DashboardController();
 
-// laad view (markeer dat we via controller komen, anders zou view direct openen)
+// View laden; VIA_CONTROLLER zodat de pagina weet dat ze via controller komt
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/dashboard-page/dashboard.php';

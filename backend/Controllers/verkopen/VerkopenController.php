@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor verkopen beheer en omzet overzicht
+// Beschrijving: Controller voor verkopen en omzet. Constructor: checkLogin, checkRol (rol 1 of 2), DAO, handleFilters, handleActions, loadArtikelen/Klanten/Verkopen. Alleen Directie en Winkelpersoneel (PDF 3.5). Optioneel datumfilter.
 
 declare(strict_types=1);
 
@@ -21,7 +21,6 @@ class VerkopenController
     public $klanten = [];
     public $editVerkoop = null;
 
-    // filters
     public $filterVanDatum = "";
     public $filterTotDatum = "";
 
@@ -45,7 +44,7 @@ class VerkopenController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -54,7 +53,7 @@ class VerkopenController
         }
     }
 
-    // Directie en Winkelpersoneel mogen verkopen beheren (PDF 3.5)
+    // rol 1 (Directie) of 2 (Winkelpersoneel) mag; anders redirect naar dashboard
     private function checkRol()
     {
         $rol = isset($_SESSION['rol_id']) ? (int)$_SESSION['rol_id'] : 0;
@@ -65,7 +64,7 @@ class VerkopenController
         exit;
     }
 
-    // verwerk filters
+    // Haal van_datum en tot_datum uit GET voor filter
     public function handleFilters()
     {
         if (isset($_GET['van_datum']) && !empty($_GET['van_datum'])) {
@@ -76,66 +75,59 @@ class VerkopenController
         }
     }
 
-    // verwerk acties
+    // POST toevoegen/bewerken (redirect na success); GET delete/edit
     public function handleActions()
     {
-        // toevoegen
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
             if ($this->meldingType === 'success') {
                 $_SESSION['verkopen_melding'] = $this->melding;
                 $_SESSION['verkopen_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // bewerken
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
             $this->handleBewerken();
             if ($this->meldingType === 'success') {
                 $_SESSION['verkopen_melding'] = $this->melding;
                 $_SESSION['verkopen_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // verwijderen
         if (isset($_GET['delete'])) {
             $id = (int)$_GET['delete'];
             $this->dao->delete($id);
             $_SESSION['verkopen_melding'] = "Verkoop verwijderd.";
             $_SESSION['verkopen_melding_type'] = "warning";
-            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }
 
-        // edit mode laden
         if (isset($_GET['edit'])) {
             $id = (int)$_GET['edit'];
             $this->editVerkoop = $this->dao->getById($id);
         }
     }
 
-    // laad artikelen voor dropdown
+    // ArtikelDAO getAll voor dropdown (artikel kiezen bij verkoop)
     public function loadArtikelen()
     {
         $artikelDao = new ArtikelDAO();
         $this->artikelen = $artikelDao->getAll();
     }
 
-    // laad klanten voor dropdown
+    // KlantDAO getAll voor dropdown (klant kiezen bij verkoop)
     public function loadKlanten()
     {
         $klantDao = new KlantDAO();
         $this->klanten = $klantDao->getAll();
     }
 
-    // voeg verkoop toe
+    // Valideer artikel_id en prijs; maak Verkopen-model, DAO create, melding
     public function handleToevoegen()
     {
         $klant_id = 0;
@@ -164,7 +156,7 @@ class VerkopenController
         $this->meldingType = "success";
     }
 
-    // bewerk verkoop
+    // Valideer id, artikel_id, prijs; maak Verkopen-model, DAO update, melding
     public function handleBewerken()
     {
         $id = 0;
@@ -197,12 +189,11 @@ class VerkopenController
         $this->meldingType = "success";
     }
 
-    // laad verkopen (met optionele datumfilter)
+    // DAO getAll; filter op datum als van_datum/tot_datum gezet; vult $verkopen voor view
     public function loadVerkopen()
     {
         $alleVerkopen = $this->dao->getAll();
 
-        // filter op datum als nodig
         if (!empty($this->filterVanDatum) || !empty($this->filterTotDatum)) {
             $gefilterd = [];
             foreach ($alleVerkopen as $verkoop) {
@@ -221,13 +212,12 @@ class VerkopenController
         }
     }
 
-    // tel resultaten
     public function countResultaten()
     {
         return count($this->verkopen);
     }
 
-    // bereken totale omzet (excl BTW)
+    // Som van verkoop_prijs_ex_btw van alle getoonde verkopen
     public function berekenTotaalExBtw(): float
     {
         $totaal = 0.0;
@@ -237,7 +227,7 @@ class VerkopenController
         return $totaal;
     }
 
-    // bereken totale omzet (incl BTW)
+    // Som van getVerkoopPrijsIncBtw() van alle getoonde verkopen
     public function berekenTotaalIncBtw(): float
     {
         $totaal = 0.0;
@@ -247,7 +237,7 @@ class VerkopenController
         return $totaal;
     }
 
-    // haal klant naam op
+    // Zoek in $this->klanten op id; geef naam terug voor weergave (0 = Anoniem)
     public function getKlantNaam(int $klantId): string
     {
         if ($klantId === 0) return 'Anoniem';
@@ -259,7 +249,7 @@ class VerkopenController
         return '-';
     }
 
-    // haal artikel naam op
+    // Zoek in $this->artikelen op id; geef naam terug voor weergave
     public function getArtikelNaam(int $artikelId): string
     {
         foreach ($this->artikelen as $artikel) {
@@ -271,9 +261,9 @@ class VerkopenController
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new VerkopenController();
 
-// laad view
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/verkopen-page/verkopen.php';

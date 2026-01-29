@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor donateurs beheer (mensen die goederen doneren)
+// Beschrijving: Controller voor donateurs. Constructor: checkLogin, checkRol (alleen rol 1), DAO, acties, loadDonateurs. Alleen Directie mag deze pagina (PDF 3.5). Optioneel zoeken op naam.
 
 declare(strict_types=1);
 
@@ -35,7 +35,7 @@ class DonateurController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -44,7 +44,7 @@ class DonateurController
         }
     }
 
-    // alleen Directie mag persoonsgegevens/donateurs beheren (PDF 3.5)
+    // Alleen rol_id 1 (Directie) mag; anders redirect naar dashboard
     private function checkRol()
     {
         if (isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1) {
@@ -54,57 +54,49 @@ class DonateurController
         exit;
     }
 
-    // verwerk acties
+    // POST toevoegen/bewerken (redirect na success); GET delete/edit/zoek
     public function handleActions()
     {
-        // toevoegen
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
             if ($this->meldingType === 'success') {
                 $_SESSION['donateur_melding'] = $this->melding;
                 $_SESSION['donateur_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // bewerken
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
             $this->handleBewerken();
             if ($this->meldingType === 'success') {
                 $_SESSION['donateur_melding'] = $this->melding;
                 $_SESSION['donateur_melding_type'] = $this->meldingType;
-                // redirect naar zichzelf om herladen te voorkomen
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // verwijderen
         if (isset($_GET['delete'])) {
             $id = (int)$_GET['delete'];
             $this->dao->delete($id);
             $_SESSION['donateur_melding'] = "Donateur verwijderd.";
             $_SESSION['donateur_melding_type'] = "warning";
-            // redirect naar zichzelf om herladen te voorkomen
             header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
             exit;
         }
 
-        // edit mode laden
         if (isset($_GET['edit'])) {
             $id = (int)$_GET['edit'];
             $this->editDonateur = $this->dao->getById($id);
         }
 
-        // zoeken
         if (isset($_GET['zoek']) && !empty($_GET['zoek'])) {
             $this->zoekterm = trim($_GET['zoek']);
         }
     }
 
-    // voeg donateur toe
+    // Valideer voornaam/achternaam; maak Donateur-model, DAO create, melding
     public function handleToevoegen()
     {
         $voornaam = trim($_POST['voornaam'] ?? '');
@@ -128,7 +120,7 @@ class DonateurController
         $this->meldingType = "success";
     }
 
-    // bewerk donateur
+    // Valideer id en velden; maak Donateur-model, DAO update, melding
     public function handleBewerken()
     {
         $id = (int)($_POST['id'] ?? 0);
@@ -153,7 +145,7 @@ class DonateurController
         $this->meldingType = "success";
     }
 
-    // laad donateurs (met optionele zoekfunctie)
+    // Met zoekterm: DAO zoekOpNaam; anders DAO getAll; vult $donateurs voor de view
     public function loadDonateurs()
     {
         if (!empty($this->zoekterm)) {
@@ -163,16 +155,15 @@ class DonateurController
         }
     }
 
-    // tel resultaten
     public function countResultaten()
     {
         return count($this->donateurs);
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new DonateurController();
 
-// laad view
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/donateur-page/donateur.php';

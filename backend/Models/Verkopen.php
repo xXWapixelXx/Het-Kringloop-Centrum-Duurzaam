@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Model class voor verkooptransacties aan klanten
+// Beschrijving: Model voor één verkoop. Alleen data (klant_id, artikel_id, prijs, datum); DAO vult dit van database-rij.
 
 declare(strict_types=1);
 
@@ -13,7 +13,7 @@ class Verkopen {
     public $verkoop_prijs_ex_btw;
     public $verkocht_op;
 
-    // constructor - legt een nieuwe verkoop vast
+    // Vul object; DAO gebruikt dit om Verkopen van database-rij te maken
     public function __construct(
         $id = 0,
         $klant_id = 0,
@@ -28,17 +28,15 @@ class Verkopen {
         $this->verkocht_op = $verkocht_op;
     }
 
-    // berekent verkoopprijs inclusief BTW (21%)
+    // Prijs inclusief 21% BTW voor weergave
     public function getVerkoopPrijsIncBtw() {
         return $this->verkoop_prijs_ex_btw * 1.21;
     }
 
-    // getter voor id
     public function getId() {
         return $this->id;
     }
 
-    // getter voor klant id
     public function getKlantId() {
         return $this->klant_id;
     }

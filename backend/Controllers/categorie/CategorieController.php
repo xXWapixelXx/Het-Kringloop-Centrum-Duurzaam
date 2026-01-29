@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor categorie beheer (alleen Directie)
+// Beschrijving: Controller voor categorieën. Constructor: checkLogin, checkDirectie (rol 1), DAO, acties, loadCategorieen. Alleen Directie mag deze pagina.
 
 declare(strict_types=1);
 
@@ -27,7 +27,7 @@ class CategorieController
         $this->loadCategorieen();
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -36,7 +36,7 @@ class CategorieController
         }
     }
 
-    // check of gebruiker Directie is
+    // rol_id != 1 = geen Directie; redirect naar dashboard
     public function checkDirectie()
     {
         if ($_SESSION['rol_id'] != 1) {
@@ -45,15 +45,13 @@ class CategorieController
         }
     }
 
-    // verwerk acties
+    // POST actie=toevoegen -> handleToevoegen; GET delete -> DAO delete
     public function handleActions()
     {
-        // nieuwe categorie toevoegen
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
         }
 
-        // categorie verwijderen
         if (isset($_GET['delete'])) {
             $id = (int)$_GET['delete'];
             $this->dao->delete($id);
@@ -62,7 +60,7 @@ class CategorieController
         }
     }
 
-    // voeg nieuwe categorie toe
+    // Valideer categorienaam; maak Categorie-model, DAO create, melding
     public function handleToevoegen()
     {
         $categorie_naam = "";
@@ -82,22 +80,21 @@ class CategorieController
         $this->meldingType = "success";
     }
 
-    // laad categorieen
+    // DAO getAll; vult $categorieen voor de view
     public function loadCategorieen()
     {
         $this->categorieen = $this->dao->getAll();
     }
 
-    // tel resultaten
     public function countResultaten()
     {
         return count($this->categorieen);
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new CategorieController();
 
-// laad view (markeer dat we via controller komen)
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/categorieen-page/categorieen.php';

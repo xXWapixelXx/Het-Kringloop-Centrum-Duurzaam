@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Model class voor klantgegevens van de kringloopwinkel
+// Beschrijving: Model voor één klant. Alleen data (naam, adres, plaats, telefoon, email); DAO vult dit van database-rij.
 
 declare(strict_types=1);
 
@@ -14,7 +14,7 @@ class Klant {
     public $telefoon;
     public $email;
 
-    // constructor - maakt een nieuwe klant aan
+    // Vul object; DAO gebruikt dit om Klant van database-rij te maken
     public function __construct(
         $id = 0,
         $naam = "",

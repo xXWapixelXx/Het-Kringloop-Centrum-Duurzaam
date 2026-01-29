@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van statussen in de database
+// Beschrijving: DAO voor statussen. Extends Database; doet queries en maakt Status-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Status.php';
 
 class StatusDAO extends Database
 {
-    // haalt alle statussen op
+    // Verbinding via parent; query; per rij Status-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -28,7 +28,7 @@ class StatusDAO extends Database
         return $statussen;
     }
 
-    // haalt één status op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Status of null
     public function getById(int $id): ?Status
     {
         $db = $this->connect();
@@ -47,7 +47,7 @@ class StatusDAO extends Database
         );
     }
 
-    // maakt een nieuwe status aan en geeft de nieuwe id terug
+    // INSERT met prepare + bindValue(:status); lastInsertId() geeft nieuwe id
     public function create(Status $status): int
     {
         $db = $this->connect();
@@ -62,7 +62,7 @@ class StatusDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een status bij op basis van id
+    // UPDATE met prepare + bindValue voor id en status; execute geeft true/false
     public function update(Status $status): bool
     {
         $db = $this->connect();
@@ -78,7 +78,7 @@ class StatusDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een status op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

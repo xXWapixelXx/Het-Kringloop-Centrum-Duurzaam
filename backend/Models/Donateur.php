@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Model class voor donateurs (mensen die goederen aanleveren)
+// Beschrijving: Model voor één donateur. Alleen data; DAO vult dit van database-rij.
 
 declare(strict_types=1);
 
@@ -17,7 +17,7 @@ class Donateur {
     public $geboortedatum;
     public $datum_ingevoerd;
 
-    // constructor - maakt een nieuwe donateur aan
+    // Vul object; DAO gebruikt dit om Donateur van database-rij te maken
     public function __construct(
         $id = 0,
         $voornaam = "",

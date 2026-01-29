@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: DAO voor het beheren van klanten in de database
+// Beschrijving: DAO voor klanten. Extends Database; doet queries en maakt Klant-objecten van database-rijen.
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/Klant.php';
 
 class KlantDAO extends Database
 {
-    // haalt alle klanten op
+    // Verbinding via parent; query; per rij Klant-object in array
     public function getAll(): array
     {
         $db = $this->connect();
@@ -35,7 +35,7 @@ class KlantDAO extends Database
         return $klanten;
     }
 
-    // haalt één klant op op basis van id
+    // prepare + bindValue(:id) + execute; één rij als Klant of null
     public function getById(int $id): ?Klant
     {
         $db = $this->connect();
@@ -62,7 +62,7 @@ class KlantDAO extends Database
         );
     }
 
-    // maakt een nieuwe klant aan en geeft de nieuwe id terug
+    // INSERT met prepare + bindValue voor alle velden; lastInsertId() geeft nieuwe id
     public function create(Klant $klant): int
     {
         $db = $this->connect();
@@ -82,7 +82,7 @@ class KlantDAO extends Database
         return (int)$db->lastInsertId();
     }
 
-    // werkt een klant bij op basis van id
+    // UPDATE met prepare + bindValue voor alle velden; execute geeft true/false
     public function update(Klant $klant): bool
     {
         $db = $this->connect();
@@ -106,7 +106,7 @@ class KlantDAO extends Database
         return $stmt->execute();
     }
 
-    // verwijdert een klant op basis van id
+    // DELETE met prepare + bindValue(:id); veilig tegen SQL-injectie
     public function delete(int $id): bool
     {
         $db = $this->connect();

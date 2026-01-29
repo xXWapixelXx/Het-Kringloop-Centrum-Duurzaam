@@ -2,7 +2,7 @@
 // Naam: Wail Said, Aaron Verdoold, Anwar Azarkan, Dylan Versluis
 // Project: Kringloop Centrum Duurzaam
 // Datum: 28-01-2026
-// Beschrijving: Controller voor klanten beheer
+// Beschrijving: Controller voor klanten. Constructor: checkLogin, checkRol (alleen rol 1), DAO, acties, laadTeBewerkenKlant, loadKlanten. Alleen Directie mag deze pagina (PDF 3.5).
 
 declare(strict_types=1);
 
@@ -28,7 +28,6 @@ class KlantController
         $this->laadTeBewerkenKlant();
         $this->loadKlanten();
 
-        // melding na redirect (bijv. na bewerken)
         if (isset($_SESSION['klant_melding'])) {
             $this->melding = $_SESSION['klant_melding'];
             $this->meldingType = $_SESSION['klant_melding_type'] ?? 'success';
@@ -36,7 +35,7 @@ class KlantController
         }
     }
 
-    // check of gebruiker is ingelogd
+    // Geen sessie = redirect naar login
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
@@ -45,7 +44,7 @@ class KlantController
         }
     }
 
-    // alleen Directie mag klanten beheren (PDF 3.5)
+    // Alleen rol_id 1 (Directie) mag; anders redirect naar dashboard
     private function checkRol()
     {
         if (isset($_SESSION['rol_id']) && $_SESSION['rol_id'] == 1) {
@@ -55,27 +54,23 @@ class KlantController
         exit;
     }
 
-    // verwerk acties
+    // POST toevoegen/bewerken (redirect na success); GET delete
     public function handleActions()
     {
-        // nieuwe klant toevoegen (redirect na opslaan zodat refresh geen dubbele klant maakt)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'toevoegen') {
             $this->handleToevoegen();
             if ($this->meldingType === 'success') {
                 $_SESSION['klant_melding'] = $this->melding;
                 $_SESSION['klant_melding_type'] = $this->meldingType;
-                // redirect naar klantenpagina
                 header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
                 exit;
             }
         }
 
-        // klant bewerken
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actie']) && $_POST['actie'] === 'bewerken') {
             $this->handleBewerken();
         }
 
-        // klant verwijderen
         if (isset($_GET['delete'])) {
             $id = (int)$_GET['delete'];
             $this->dao->delete($id);
@@ -84,7 +79,7 @@ class KlantController
         }
     }
 
-    // laad klant die bewerkt moet worden (bij ?edit=id)
+    // Bij ?edit=id: DAO getById; vult teBewerkenKlant voor formulier
     public function laadTeBewerkenKlant()
     {
         if (isset($_GET['edit']) && $_GET['edit'] !== '') {
@@ -95,7 +90,7 @@ class KlantController
         }
     }
 
-    // bewerk bestaande klant
+    // Valideer id en naam; maak Klant-model, DAO update, redirect
     public function handleBewerken()
     {
         $id = (int)($_POST['id'] ?? 0);
@@ -115,12 +110,11 @@ class KlantController
         $this->dao->update($klant);
         $_SESSION['klant_melding'] = "Klant bijgewerkt.";
         $_SESSION['klant_melding_type'] = "success";
-        // redirect naar klantenpagina
         header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
         exit;
     }
 
-    // voeg nieuwe klant toe
+    // Valideer voornaam/achternaam; maak Klant-model, DAO create, melding
     public function handleToevoegen()
     {
         $voornaam = trim($_POST['voornaam'] ?? '');
@@ -146,22 +140,21 @@ class KlantController
         $this->meldingType = "success";
     }
 
-    // laad klanten
+    // DAO getAll; vult $klanten voor de view
     public function loadKlanten()
     {
         $this->klanten = $this->dao->getAll();
     }
 
-    // tel resultaten
     public function countResultaten()
     {
         return count($this->klanten);
     }
 }
 
-// run controller
+// Maak controller; daarna view
 $controller = new KlantController();
 
-// laad view (markeer dat we via controller komen)
+// View laden; VIA_CONTROLLER
 define('VIA_CONTROLLER', true);
 require_once __DIR__ . '/../../../frontend/klanten-page/klanten.php';
