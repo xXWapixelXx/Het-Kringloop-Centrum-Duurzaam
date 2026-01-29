@@ -25,10 +25,5 @@ class Categorie {
     public function getCategorie() {
         return $this->categorie;
     }
-
-    // setter voor categorie naam
-    public function setCategorie($categorie) {
-        $this->categorie = $categorie;
-    }
 }
 ?>

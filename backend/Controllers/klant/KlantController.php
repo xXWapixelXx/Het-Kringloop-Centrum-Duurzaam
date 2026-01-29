@@ -114,6 +114,7 @@ class KlantController
         $this->dao->update($klant);
         $_SESSION['klant_melding'] = "Klant bijgewerkt.";
         $_SESSION['klant_melding_type'] = "success";
+        // redirect naar klantenpagina
         header('Location: ' . basename($_SERVER['SCRIPT_NAME']));
         exit;
     }

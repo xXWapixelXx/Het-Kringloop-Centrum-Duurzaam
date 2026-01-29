@@ -42,40 +42,5 @@ class Verkopen {
     public function getKlantId() {
         return $this->klant_id;
     }
-
-    // setter voor klant id
-    public function setKlantId($klant_id) {
-        $this->klant_id = $klant_id;
-    }
-
-    // getter voor artikel id
-    public function getArtikelId() {
-        return $this->artikel_id;
-    }
-
-    // setter voor artikel id
-    public function setArtikelId($artikel_id) {
-        $this->artikel_id = $artikel_id;
-    }
-
-    // getter voor verkoopprijs exclusief btw
-    public function getVerkoopPrijsExBtw() {
-        return $this->verkoop_prijs_ex_btw;
-    }
-
-    // setter voor verkoopprijs exclusief btw
-    public function setVerkoopPrijsExBtw($prijs) {
-        $this->verkoop_prijs_ex_btw = $prijs;
-    }
-
-    // getter voor verkocht op datum
-    public function getVerkochtOp() {
-        return $this->verkocht_op;
-    }
-
-    // setter voor verkocht op datum
-    public function setVerkochtOp($datum) {
-        $this->verkocht_op = $datum;
-    }
 }
 ?>

@@ -32,16 +32,6 @@ class Gebruiker {
         return $this->gebruikersnaam;
     }
 
-    // setter voor gebruikersnaam
-    public function setGebruikersnaam($gebruikersnaam) {
-        $this->gebruikersnaam = $gebruikersnaam;
-    }
-
-    // getter voor wachtwoord
-    public function getWachtwoord() {
-        return $this->wachtwoord;
-    }
-
     // setter voor wachtwoord - hash het wachtwoord voor veiligheid
     public function setWachtwoord($wachtwoord) {
         $this->wachtwoord = password_hash($wachtwoord, PASSWORD_DEFAULT);
@@ -50,26 +40,6 @@ class Gebruiker {
     // getter voor rol id
     public function getRolId() {
         return $this->rol_id;
-    }
-
-    // setter voor rol id
-    public function setRolId($rol_id) {
-        $this->rol_id = $rol_id;
-    }
-
-    // getter voor geblokkeerd status (US-32)
-    public function isGeblokkeerd() {
-        return $this->geblokkeerd == 1;
-    }
-
-    // setter voor geblokkeerd status (US-32)
-    public function setGeblokkeerd($geblokkeerd) {
-        $this->geblokkeerd = $geblokkeerd ? 1 : 0;
-    }
-
-    // controleert of ingevoerd wachtwoord klopt
-    public function checkWachtwoord($wachtwoord) {
-        return password_verify($wachtwoord, $this->wachtwoord);
     }
 }
 ?>
