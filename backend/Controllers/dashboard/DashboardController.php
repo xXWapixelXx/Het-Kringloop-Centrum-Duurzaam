@@ -43,12 +43,6 @@ class DashboardController
         require __DIR__ . '/../../Config/rollen.php';
         $this->rolNaam = $ROL_LEN[$this->rolId] ?? 'Onbekend';
     }
-
-    // check of gebruiker directie is
-    public function isDirectie()
-    {
-        return $this->rolId == 1;
-    }
 }
 
 // run controller
