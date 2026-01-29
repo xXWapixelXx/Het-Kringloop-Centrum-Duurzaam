@@ -6,18 +6,22 @@
 
 declare(strict_types=1);
 
+// Database.php: nodig omdat we extends Database doen en straks $this->connect() aanroepen
 require_once __DIR__ . "/../../Database/Database.php";
+// UpdatePasswordDAO: die doet het echte werk (password_hash + UPDATE-query met prepared statement)
 require_once __DIR__ . "/../../DAO/login/UpdatePasswordDAO.php";
 
+// extends Database = we erven connect() van de parent; daardoor kunnen we $this->connect() gebruiken
 class UpdatePasswordController extends Database
 {
-    // connect via parent; DAO doet prepare + bindValue + execute om wachtwoord (hash) in DB te zetten
+    // Stap 1: verbinding maken. Stap 2: verbinding aan DAO geven. Stap 3: DAO laat hashen + UPDATE doen. Return true/false.
     public function resetPassword(string $gebruikersnaam, string $newPassword): bool
     {
+        // $pdo = de databaseverbinding (PDO-object). connect() komt uit de parent class Database
         $pdo = $this->connect();
-        // Maak een instantie van de UpdatePasswordDAO
+        // UpdatePasswordDAO heeft geen extends Database, dus geen eigen connect(); we geven $pdo mee
         $dbal = new UpdatePasswordDAO($pdo);
-        // Roep de updatePassword-methode aan
+        // DAO hasht het wachtwoord en doet UPDATE gebruiker SET wachtwoord = ... WHERE gebruikersnaam = ...
         return $dbal->updatePassword($gebruikersnaam, $newPassword);
     }
 }

@@ -35,7 +35,7 @@ class ArtikelDAO extends Database
         return $artikelen;
     }
 
-    // prepare + bindValue(:id) + execute; één rij als Artikel of null
+    // prepare + bindValue(:id) + execute één rij als Artikel of null
     public function getById(int $id): ?Artikel
     {
         $db = $this->connect();
