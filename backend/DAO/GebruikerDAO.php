@@ -15,7 +15,7 @@ class GebruikerDAO extends Database
     public function getAll(): array
     {
         $db = $this->connect();
-        $stmt = $db->query("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker");
+        $stmt = $db->query("SELECT id, gebruikersnaam, wachtwoord, rol_id, IFNULL(geblokkeerd, 0) as geblokkeerd FROM gebruiker");
 
         $gebruikers = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -23,7 +23,8 @@ class GebruikerDAO extends Database
                 (int)$row['id'],
                 $row['gebruikersnaam'],
                 $row['wachtwoord'],
-                (int)$row['rol_id']
+                (int)$row['rol_id'],
+                (int)$row['geblokkeerd']
             );
         }
 
@@ -34,7 +35,7 @@ class GebruikerDAO extends Database
     public function getById(int $id): ?Gebruiker
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker WHERE id = :id");
+        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id, IFNULL(geblokkeerd, 0) as geblokkeerd FROM gebruiker WHERE id = :id");
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -47,7 +48,8 @@ class GebruikerDAO extends Database
             (int)$row['id'],
             $row['gebruikersnaam'],
             $row['wachtwoord'],
-            (int)$row['rol_id']
+            (int)$row['rol_id'],
+            (int)$row['geblokkeerd']
         );
     }
 
@@ -55,7 +57,7 @@ class GebruikerDAO extends Database
     public function getByGebruikersnaam(string $gebruikersnaam): ?Gebruiker
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker WHERE gebruikersnaam = :gebruikersnaam");
+        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id, IFNULL(geblokkeerd, 0) as geblokkeerd FROM gebruiker WHERE gebruikersnaam = :gebruikersnaam");
         $stmt->bindValue(':gebruikersnaam', $gebruikersnaam, PDO::PARAM_STR);
         $stmt->execute();
 
@@ -68,7 +70,8 @@ class GebruikerDAO extends Database
             (int)$row['id'],
             $row['gebruikersnaam'],
             $row['wachtwoord'],
-            (int)$row['rol_id']
+            (int)$row['rol_id'],
+            (int)$row['geblokkeerd']
         );
     }
 
@@ -76,7 +79,7 @@ class GebruikerDAO extends Database
     public function getByRolId(int $rolId): array
     {
         $db = $this->connect();
-        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id FROM gebruiker WHERE rol_id = :rol_id");
+        $stmt = $db->prepare("SELECT id, gebruikersnaam, wachtwoord, rol_id, IFNULL(geblokkeerd, 0) as geblokkeerd FROM gebruiker WHERE rol_id = :rol_id");
         $stmt->bindValue(':rol_id', $rolId, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -86,7 +89,8 @@ class GebruikerDAO extends Database
                 (int)$row['id'],
                 $row['gebruikersnaam'],
                 $row['wachtwoord'],
-                (int)$row['rol_id']
+                (int)$row['rol_id'],
+                (int)$row['geblokkeerd']
             );
         }
 
@@ -98,13 +102,14 @@ class GebruikerDAO extends Database
     {
         $db = $this->connect();
         $stmt = $db->prepare("
-            INSERT INTO gebruiker (gebruikersnaam, wachtwoord, rol_id)
-            VALUES (:gebruikersnaam, :wachtwoord, :rol_id)
+            INSERT INTO gebruiker (gebruikersnaam, wachtwoord, rol_id, geblokkeerd)
+            VALUES (:gebruikersnaam, :wachtwoord, :rol_id, :geblokkeerd)
         ");
 
         $stmt->bindValue(':gebruikersnaam', $gebruiker->gebruikersnaam, PDO::PARAM_STR);
         $stmt->bindValue(':wachtwoord', $gebruiker->wachtwoord, PDO::PARAM_STR);
         $stmt->bindValue(':rol_id', $gebruiker->rol_id, PDO::PARAM_INT);
+        $stmt->bindValue(':geblokkeerd', $gebruiker->geblokkeerd ?? 0, PDO::PARAM_INT);
 
         $stmt->execute();
 
@@ -119,7 +124,8 @@ class GebruikerDAO extends Database
             UPDATE gebruiker
             SET gebruikersnaam = :gebruikersnaam,
                 wachtwoord = :wachtwoord,
-                rol_id = :rol_id
+                rol_id = :rol_id,
+                geblokkeerd = :geblokkeerd
             WHERE id = :id
         ");
 
@@ -127,7 +133,17 @@ class GebruikerDAO extends Database
         $stmt->bindValue(':gebruikersnaam', $gebruiker->gebruikersnaam, PDO::PARAM_STR);
         $stmt->bindValue(':wachtwoord', $gebruiker->wachtwoord, PDO::PARAM_STR);
         $stmt->bindValue(':rol_id', $gebruiker->rol_id, PDO::PARAM_INT);
+        $stmt->bindValue(':geblokkeerd', $gebruiker->geblokkeerd ?? 0, PDO::PARAM_INT);
 
+        return $stmt->execute();
+    }
+
+    // blokkeer of deblokkeer een gebruiker (US-32)
+    public function toggleBlokkeer(int $id): bool
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("UPDATE gebruiker SET geblokkeerd = NOT IFNULL(geblokkeerd, 0) WHERE id = :id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
 

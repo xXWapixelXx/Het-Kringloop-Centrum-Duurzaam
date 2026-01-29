@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 session_start();
 
-require_once __DIR__ . '/../DAO/CategorieDAO.php';
+require_once __DIR__ . '/../../DAO/CategorieDAO.php';
 
 class CategorieController
 {
@@ -31,7 +31,7 @@ class CategorieController
     public function checkLogin()
     {
         if (!isset($_SESSION['gebruiker_id'])) {
-            header('Location: LoginController.php');
+            header('Location: ../login/LoginController.php');
             exit;
         }
     }
@@ -40,7 +40,7 @@ class CategorieController
     public function checkDirectie()
     {
         if ($_SESSION['rol_id'] != 1) {
-            header('Location: DashboardController.php');
+            header('Location: ../dashboard/DashboardController.php');
             exit;
         }
     }
@@ -65,18 +65,20 @@ class CategorieController
     // voeg nieuwe categorie toe
     public function handleToevoegen()
     {
-        $code = $_POST['code'];
-        $omschrijving = $_POST['omschrijving'];
+        $categorie_naam = "";
+        if (isset($_POST['categorie'])) {
+            $categorie_naam = trim($_POST['categorie']);
+        }
 
-        if (empty($code) || empty($omschrijving)) {
-            $this->melding = "Vul alle velden in.";
+        if ($categorie_naam === "") {
+            $this->melding = "Vul de categorie in.";
             $this->meldingType = "danger";
             return;
         }
 
-        $categorie = new Categorie(0, $code, $omschrijving);
+        $categorie = new Categorie(0, $categorie_naam);
         $this->dao->create($categorie);
-        $this->melding = "Categorie succesvol toegevoegd!";
+        $this->melding = "Categorie toegevoegd.";
         $this->meldingType = "success";
     }
 
@@ -96,5 +98,6 @@ class CategorieController
 // run controller
 $controller = new CategorieController();
 
-// laad view
-require_once __DIR__ . '/../../frontend/templates/categorieen.php';
+// laad view (markeer dat we via controller komen)
+define('VIA_CONTROLLER', true);
+require_once __DIR__ . '/../../../frontend/categorieen-page/categorieen.php';

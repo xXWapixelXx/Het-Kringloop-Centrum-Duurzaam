@@ -50,6 +50,21 @@ class VoorraadDAO extends Database
         return $voorraad;
     }
 
+    // voeg nieuwe voorraad toe (functioneel ontwerp 3.4: locatie, aantal, wel/niet reparatie, verkoop-gereed)
+    public function create(Voorraad $voorraad): int
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            INSERT INTO voorraad (artikel_id, locatie, aantal, status_id, wel_reparatie, verkoopgereed, ingeboekt_op)
+            VALUES (:artikel_id, 'Magazijn', :aantal, 1, 0, 0, NOW())
+        ");
+        $stmt->bindValue(':artikel_id', (int)$voorraad->artikel_id, PDO::PARAM_INT);
+        $stmt->bindValue(':aantal', (int)$voorraad->hoeveelheid, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return (int)$db->lastInsertId();
+    }
+
     // verwijdert voorraad
     public function delete(int $id): bool
     {
@@ -58,6 +73,41 @@ class VoorraadDAO extends Database
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 
         return $stmt->execute();
+    }
+
+    // haalt maandoverzicht binnengebrachte artikelen op (US-29)
+    public function getMaandOverzicht(int $jaar, int $maand): array
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            SELECT v.id, v.artikel_id, v.aantal, v.ingeboekt_op, a.naam as artikel_naam
+            FROM voorraad v
+            LEFT JOIN artikel a ON v.artikel_id = a.id
+            WHERE YEAR(v.ingeboekt_op) = :jaar AND MONTH(v.ingeboekt_op) = :maand
+            ORDER BY v.ingeboekt_op DESC
+        ");
+        $stmt->bindValue(':jaar', $jaar, PDO::PARAM_INT);
+        $stmt->bindValue(':maand', $maand, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // tel totaal aantal binnengebrachte artikelen per maand (US-29)
+    public function getTotaalMaand(int $jaar, int $maand): int
+    {
+        $db = $this->connect();
+        $stmt = $db->prepare("
+            SELECT COALESCE(SUM(aantal), 0) as totaal
+            FROM voorraad
+            WHERE YEAR(ingeboekt_op) = :jaar AND MONTH(ingeboekt_op) = :maand
+        ");
+        $stmt->bindValue(':jaar', $jaar, PDO::PARAM_INT);
+        $stmt->bindValue(':maand', $maand, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['totaal'] ?? 0);
     }
 }
 ?>
